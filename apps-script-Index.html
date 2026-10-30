@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>가을밤 천체관측 신청 | 고천중학교</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#eef2ff; --dim:#aab4d6; --faint:#7480a8;
+  --night:#050816; --deep:#0b1230; --card:#111a3d; --line:#26325f;
+  --moon:#f6e7b8; --gold:#ffcf6b; --ring:#d9c08a; --red:#ff7a7a; --mint:#7fe3c4;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--night);color:var(--ink);font-family:"Noto Sans KR",sans-serif;font-size:16px;line-height:1.65;-webkit-text-size-adjust:100%}
+#sky{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+.wrap{position:relative;z-index:1;max-width:760px;margin:0 auto;padding:0 18px 60px}
+a{color:var(--gold)}
+
+/* hero */
+.hero{position:relative;min-height:88vh;display:flex;flex-direction:column;justify-content:center;padding:56px 0 40px}
+.kicker{display:inline-flex;align-items:center;gap:8px;font-size:.85rem;letter-spacing:.14em;color:var(--gold);font-weight:700}
+.kicker::before{content:"";width:26px;height:1px;background:var(--gold)}
+h1{font-family:"Gowun Batang",serif;font-weight:700;font-size:clamp(2.6rem,9vw,4.4rem);line-height:1.12;margin:14px 0 6px;letter-spacing:-.01em;text-shadow:0 0 40px #6d7cff40}
+.sub{font-family:"Gowun Batang",serif;font-size:clamp(1.2rem,4.2vw,1.6rem);color:var(--moon);margin:0 0 22px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:26px}
+.chip{border:1px solid var(--line);background:#0b1230cc;border-radius:999px;padding:6px 14px;font-size:.92rem;color:var(--ink)}
+.chip b{color:var(--gold);font-weight:700;margin-right:4px}
+.celestial{position:absolute;right:-10px;top:40px;width:min(42vw,280px);opacity:.95;pointer-events:none}
+.saturn{position:absolute;right:260px;top:170px;width:92px;pointer-events:none;transform:rotate(-6deg)}
+
+/* seats */
+.seats{background:linear-gradient(160deg,#16205099,#0b1230cc);border:1px solid var(--line);border-radius:18px;padding:18px 18px 16px;backdrop-filter:blur(4px)}
+.seatTop{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.seatNum{font-family:"Gowun Batang",serif;font-size:2.3rem;font-weight:700;color:var(--gold);line-height:1}
+.seatNum small{font-size:1rem;color:var(--dim);font-family:"Noto Sans KR";font-weight:500;margin-left:4px}
+.dots{display:grid;grid-template-columns:repeat(13,minmax(0,22px));gap:6px;margin:14px 0 10px}
+.dot{aspect-ratio:1;border-radius:50%;background:#26325f}
+.dot.on{background:radial-gradient(circle at 35% 35%,#fff7d6,var(--gold));box-shadow:0 0 8px #ffcf6b88}
+.state{font-size:.95rem;color:var(--dim)}
+.state b{color:var(--ink)}
+.cta{display:inline-flex;align-items:center;justify-content:center;gap:8px;margin-top:16px;width:100%;min-height:54px;border:0;border-radius:14px;background:linear-gradient(90deg,#ffcf6b,#ffa94d);color:#1b1300;font-weight:900;font-size:1.08rem;font-family:inherit;cursor:pointer;text-decoration:none}
+.cta[disabled]{background:#2a3566;color:#8d97c0;cursor:not-allowed}
+
+/* sections */
+section{margin-top:56px}
+h2{font-family:"Gowun Batang",serif;font-size:1.65rem;margin:0 0 6px;font-weight:700}
+.lead{color:var(--dim);margin:0 0 18px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.card{background:#0f1738e6;border:1px solid var(--line);border-radius:16px;padding:18px}
+.card h3{margin:0 0 4px;font-size:1.12rem}
+.card p{margin:0;color:var(--dim);font-size:.95rem}
+.card .big{font-size:2rem;line-height:1;margin-bottom:10px}
+
+.tl{list-style:none;margin:0;padding:0;border-left:1px dashed #3a4780;margin-left:8px}
+.tl li{position:relative;padding:0 0 16px 22px}
+.tl li::before{content:"";position:absolute;left:-6px;top:8px;width:11px;height:11px;border-radius:50%;background:var(--deep);border:2px solid var(--gold)}
+.tl li.star::before{background:var(--gold);box-shadow:0 0 10px var(--gold)}
+.tl time{display:block;font-size:.85rem;color:var(--gold);font-weight:700;letter-spacing:.02em}
+.tl span{font-size:1rem}
+.tl em{font-style:normal;color:var(--faint);font-size:.88rem;margin-left:6px}
+
+.notes{display:grid;gap:10px}
+.note{display:flex;gap:14px;align-items:flex-start;background:#0f1738e6;border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.note .ic{font-size:1.5rem;line-height:1.2;flex:none}
+.note b{display:block;margin-bottom:2px}
+.note p{margin:0;color:var(--dim);font-size:.95rem}
+.note.warn{border-color:#5a4a20;background:#1d1a2ee6}
+
+/* form */
+form,.lookup{background:#0f1738f2;border:1px solid var(--line);border-radius:18px;padding:20px}
+.f{margin-bottom:16px}
+.f>label,.f>.lb{display:block;font-weight:700;margin-bottom:6px;font-size:.98rem}
+.req{color:var(--gold);margin-left:3px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1.4fr;gap:10px}
+input[type=text],input[type=tel]{width:100%;min-height:50px;border-radius:12px;border:1px solid #33407a;background:#080d24;color:var(--ink);font-size:1.05rem;padding:10px 14px;font-family:inherit}
+input:focus{outline:2px solid var(--gold);outline-offset:1px;border-color:transparent}
+.seg{display:flex;gap:8px;flex-wrap:wrap}
+.seg label{flex:1;min-width:120px;display:flex;align-items:center;justify-content:center;gap:8px;min-height:50px;border-radius:12px;border:1px solid #33407a;background:#080d24;cursor:pointer;font-weight:500;text-align:center;padding:8px 10px;font-size:.98rem}
+.seg input{position:absolute;opacity:0;pointer-events:none}
+.seg label:has(input:checked){border-color:var(--gold);background:#2a2410;color:var(--gold);font-weight:700}
+.hint{font-size:.85rem;color:var(--faint);margin-top:5px}
+.agree{border:1px solid #33407a;border-radius:12px;padding:12px 14px;background:#080d24;font-size:.88rem;color:var(--dim)}
+.agree table{width:100%;border-collapse:collapse;margin:6px 0 10px}
+.agree td{padding:4px 0;vertical-align:top}
+.agree td:first-child{color:var(--ink);white-space:nowrap;padding-right:12px;font-weight:500}
+.chk{display:flex;gap:10px;align-items:center;font-weight:700;color:var(--ink);font-size:.98rem;cursor:pointer}
+.chk input{width:22px;height:22px;accent-color:var(--gold)}
+.msg{margin-top:12px;font-size:.96rem;border-radius:12px;padding:12px 14px;display:none}
+.msg.err{display:block;background:#3a1626;border:1px solid #7a2c47;color:#ffd1dc}
+
+/* ticket */
+.ticket{display:none;margin-top:4px;position:relative;border-radius:18px;overflow:hidden;background:linear-gradient(135deg,#1b2459,#2b1e4e);border:1px solid #4a4a8a}
+.ticket.on{display:block;animation:rise .6s ease}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.tk-top{padding:20px 20px 16px;border-bottom:2px dashed #ffffff30;position:relative}
+.tk-top::before,.tk-top::after{content:"";position:absolute;bottom:-11px;width:22px;height:22px;border-radius:50%;background:var(--night)}
+.tk-top::before{left:-11px}.tk-top::after{right:-11px}
+.tk-k{font-size:.78rem;letter-spacing:.18em;color:var(--gold);font-weight:700}
+.tk-name{font-family:"Gowun Batang",serif;font-size:1.7rem;font-weight:700;margin:4px 0 2px}
+.tk-st{display:inline-block;margin-top:8px;padding:4px 12px;border-radius:999px;font-weight:900;font-size:.95rem}
+.tk-st.ok{background:var(--mint);color:#062b20}
+.tk-st.wait{background:var(--gold);color:#2a1d00}
+.tk-bot{display:grid;grid-template-columns:repeat(3,1fr);padding:14px 20px 18px;gap:8px}
+.tk-bot small{display:block;color:var(--faint);font-size:.75rem}
+.tk-bot b{font-size:1.02rem}
+.tk-msg{padding:0 20px 18px;color:var(--dim);font-size:.92rem}
+
+.lookup .row3{grid-template-columns:.8fr .8fr .8fr 1.4fr}
+.btn2{min-height:50px;border-radius:12px;border:1px solid var(--gold);background:transparent;color:var(--gold);font-weight:700;font-size:1rem;font-family:inherit;padding:0 18px;cursor:pointer;width:100%;margin-top:10px}
+.res{margin-top:12px;font-size:.98rem}
+
+footer{margin-top:60px;padding-top:20px;border-top:1px solid var(--line);color:var(--faint);font-size:.88rem;text-align:center}
+.pv{position:fixed;left:12px;bottom:12px;z-index:9;background:#ff7a7a;color:#2b0000;font-weight:900;font-size:.78rem;border-radius:999px;padding:4px 10px}
+
+@media (max-width:760px){.saturn{display:none}}
+@media (max-width:560px){
+  .grid2{grid-template-columns:1fr}
+  .row3{grid-template-columns:1fr 1fr}
+  .row3 .nm{grid-column:1/-1}
+  .lookup .row3{grid-template-columns:1fr 1fr 1fr}
+  .lookup .row3 .nm{grid-column:1/-1}
+  .celestial{width:46vw;right:-24px;top:18px;opacity:.55}
+  .saturn{display:none}
+  .dots{gap:4px}
+}
+@media (prefers-reduced-motion:reduce){.ticket.on{animation:none}}
+</style>
+</head>
+<body>
+<canvas id="sky" aria-hidden="true"></canvas>
+<div class="wrap">
+
+ <header class="hero">
+  <svg class="celestial" viewBox="0 0 200 200" aria-hidden="true">
+   <defs>
+    <radialGradient id="mg" cx=".62" cy=".4" r=".7"><stop offset="0" stop-color="#fffaf0"/><stop offset=".6" stop-color="#f6e7b8"/><stop offset="1" stop-color="#d7c48f"/></radialGradient>
+    <radialGradient id="glow"><stop offset=".55" stop-color="#f6e7b8" stop-opacity=".35"/><stop offset="1" stop-color="#f6e7b8" stop-opacity="0"/></radialGradient>
+    <clipPath id="mc"><circle cx="100" cy="100" r="62"/></clipPath>
+   </defs>
+   <circle cx="100" cy="100" r="98" fill="url(#glow)"/>
+   <circle cx="100" cy="100" r="62" fill="url(#mg)"/>
+   <g clip-path="url(#mc)" fill="#c9b67f" opacity=".55">
+    <ellipse cx="82" cy="78" rx="18" ry="13"/><ellipse cx="112" cy="70" rx="12" ry="9"/><ellipse cx="96" cy="104" rx="15" ry="10"/>
+    <ellipse cx="124" cy="96" rx="9" ry="12"/><ellipse cx="78" cy="118" rx="10" ry="7"/>
+    <circle cx="108" cy="138" r="4"/><circle cx="132" cy="122" r="3"/><circle cx="70" cy="96" r="2.5"/>
+   </g>
+   <!-- 보름 하루 전: 왼쪽 가장자리가 아주 살짝 어둡다 -->
+   <ellipse cx="44" cy="100" rx="14" ry="64" fill="#050816" opacity=".45" clip-path="url(#mc)"/>
+  </svg>
+  <svg class="saturn" viewBox="0 0 120 70" aria-hidden="true">
+   <ellipse cx="60" cy="35" rx="56" ry="13" fill="none" stroke="#d9c08a" stroke-width="3" opacity=".9" transform="rotate(-14 60 35)"/>
+   <circle cx="60" cy="35" r="19" fill="#e6cf9b"/>
+   <path d="M43 30 q17 -6 34 0 M42 38 q18 5 36 0" stroke="#c9a96a" stroke-width="2" fill="none" opacity=".7"/>
+  </svg>
+
+  <div class="kicker">2026 고천중학교 과학 행사</div>
+  <h1>가을밤<br>천체관측</h1>
+  <p class="sub">망원경으로 달과 토성을 만나는 밤</p>
+  <div class="chips">
+   <span class="chip"><b>일시</b>11. 23.(월) 18:00 – 20:40</span>
+   <span class="chip"><b>장소</b>바우하우스 · 운동장</span>
+   <span class="chip"><b>대상</b>1·2학년 25명 (선착순)</span>
+   <span class="chip"><b>참가비</b>무료</span>
+  </div>
+
+  <div class="seats" aria-live="polite">
+   <div class="seatTop">
+    <div><div class="state" style="margin-bottom:6px">남은 자리</div><div class="seatNum" id="left">–<small>/ 25</small></div></div>
+    <div class="state" style="text-align:right" id="waitTxt">대기 – / 5</div>
+   </div>
+   <div class="dots" id="dots"></div>
+   <div class="state" id="stateTxt">불러오는 중…</div>
+   <button class="cta" id="toForm" type="button">신청하기</button>
+  </div>
+ </header>
+
+ <section>
+  <h2>그날 밤 하늘</h2>
+  <p class="lead">일몰 17:17. 두 번의 강의를 듣고 나오면 하늘이 완전히 어두워져 있어요.</p>
+  <div class="grid2">
+   <div class="card"><div class="big">🌕</div><h3>보름 하루 전의 달</h3><p>98% 밝게 빛나는 달이 남동쪽 하늘 높이 떠 있어요. 망원경으로 크레이터와 넓은 '바다'를 가까이 봅니다.</p></div>
+   <div class="card"><div class="big">🪐</div><h3>고리가 보이는 토성</h3><p>저녁 내내 남쪽 하늘에 떠 있어요. 교과서 사진으로만 보던 토성의 고리를 내 눈으로 직접 확인해요.</p></div>
+   <div class="card"><div class="big">✨</div><h3>이중성과 성단</h3><p>맨눈에는 별 하나인데 망원경으로 보면 색이 다른 두 별! 별들이 모여 반짝이는 성단도 찾아봐요.</p></div>
+   <div class="card"><div class="big">🌌</div><h3>가을·겨울 별자리</h3><p>망원경 차례를 기다리는 동안 맨눈으로 밤하늘의 별자리를 하나씩 찾아 이어 봅니다.</p></div>
+  </div>
+ </section>
+
+ <section>
+  <h2>프로그램</h2>
+  <p class="lead">외부 천문 강사 두 분과 함께합니다.</p>
+  <ul class="tl">
+   <li><time>17:50</time><span>바우하우스 집합</span><em>출석 · 복장 점검 · 핫팩 받기</em></li>
+   <li><time>18:00 – 18:40</time><span>강의 ① 오늘의 밤하늘</span><em>오늘 밤 무엇을 어디서 볼까</em></li>
+   <li><time>18:50 – 19:30</time><span>강의 ② 별과 우주</span></li>
+   <li class="star"><time>19:40 – 20:40</time><span>운동장 관측</span><em>달 · 토성 · 이중성 · 성단, 맨눈 별자리</em></li>
+   <li><time>20:40</time><span>정문에서 보호자와 함께 귀가</span></li>
+  </ul>
+ </section>
+
+ <section>
+  <h2>꼭 알아 두세요</h2>
+  <div class="notes">
+   <div class="note warn"><div class="ic">🧣</div><div><b>한겨울 복장으로 오세요</b><p>밤에는 0℃ 안팎까지 내려가고, 운동장에서 한 시간 동안 서서 관측하면 훨씬 춥게 느껴져요. 두꺼운 외투, 모자, 목도리, 장갑, 두꺼운 양말을 챙겨 주세요. 따뜻한 물이 든 보온병도 좋아요. 핫팩은 학교에서 나눠 줍니다.</p></div></div>
+   <div class="note"><div class="ic">📱</div><div><b>불빛 예절</b><p>밝은 불빛은 어둠에 익숙해진 눈을 처음으로 되돌려요. 관측하는 동안 휴대폰 화면 밝기를 낮추고, 손전등이나 화면 불빛을 하늘·망원경·친구 얼굴 쪽으로 비추지 않기로 해요.</p></div></div>
+   <div class="note"><div class="ic">🦺</div><div><b>사전 안전교육 (필수)</b><p>11월 20일(금) 15:30, 바우하우스. 참가가 확정된 학생은 꼭 참석해야 해요.</p></div></div>
+   <div class="note"><div class="ic">🏠</div><div><b>귀가는 보호자와 함께</b><p>관측이 20:40에 끝나요. 보호자께서는 20:40까지 정문으로 와 주세요. 혼자 귀가해야 하면 신청할 때 '단독 귀가'를 골라 주시고, 집에 도착하면 담당 선생님께 문자를 보내 주세요.</p></div></div>
+   <div class="note"><div class="ic">☁️</div><div><b>날씨가 나쁘면</b><p>흐리면 실내 프로그램(망원경 다루기, 별자리 프로그램)으로 바꾸고, 비·눈·한파 특보 때는 연기해요. 당일 16:00까지 알려 드립니다.</p></div></div>
+   <div class="note"><div class="ic">📝</div><div><b>생활기록부</b><p>참여한 학생은 과학과 운영계획에 따라 생활기록부 특기사항에 기록됩니다.</p></div></div>
+  </div>
+ </section>
+
+ <section id="apply">
+  <h2>신청하기</h2>
+  <p class="lead" id="applyLead">11월 7일(토) 오전 9시부터 11월 10일(화) 오후 6시까지 선착순으로 받아요. 정원 25명이 차면 대기 5명까지 받습니다. 학생과 보호자 중 <b>한 분만</b> 신청해 주세요.</p>
+  <form id="f" novalidate>
+   <div class="f"><span class="lb">학년<span class="req">*</span></span>
+    <div class="seg"><label><input type="radio" name="grade" value="1">1학년</label><label><input type="radio" name="grade" value="2">2학년</label></div></div>
+   <div class="f"><span class="lb">반 · 번호 · 이름<span class="req">*</span></span>
+    <div class="row3">
+     <input type="text" name="cls" inputmode="numeric" placeholder="반" maxlength="2" aria-label="반">
+     <input type="text" name="num" inputmode="numeric" placeholder="번호" maxlength="2" aria-label="번호">
+     <input type="text" name="name" class="nm" placeholder="학생 이름" maxlength="10" aria-label="학생 이름" autocomplete="off">
+    </div></div>
+   <div class="f"><span class="lb">신청하는 사람<span class="req">*</span></span>
+    <div class="seg"><label><input type="radio" name="who" value="학생" checked>학생</label><label><input type="radio" name="who" value="보호자">보호자</label></div></div>
+   <div class="f"><label for="phone">보호자 연락처<span class="req">*</span></label>
+    <input type="tel" id="phone" name="phone" inputmode="tel" placeholder="010-0000-0000" maxlength="14">
+    <div class="hint">행사 당일 비상 연락과 날씨 변경 안내에만 씁니다.</div></div>
+   <div class="f"><span class="lb">귀가 방법<span class="req">*</span></span>
+    <div class="seg"><label><input type="radio" name="home" value="보호자 동행">보호자와 함께</label><label><input type="radio" name="home" value="단독 귀가(보호자 동의)">혼자 귀가 (보호자 동의)</label></div></div>
+   <div class="f"><div class="agree">
+    <b style="color:var(--ink)">개인정보 수집·이용 동의</b>
+    <table>
+     <tr><td>수집 항목</td><td>학년, 반, 번호, 학생 이름, 보호자 연락처, 귀가 방법</td></tr>
+     <tr><td>이용 목적</td><td>천체관측 행사 참가자 선정, 비상 연락, 안전한 귀가 지도</td></tr>
+     <tr><td>보유 기간</td><td>행사가 끝난 뒤 지체 없이 파기 (2026. 11. 30.까지)</td></tr>
+    </table>
+    동의하지 않을 수 있으며, 동의하지 않으면 행사에 신청할 수 없습니다.
+    <label class="chk" style="margin-top:10px"><input type="checkbox" name="agree"> 위 내용에 동의합니다</label>
+   </div></div>
+   <button class="cta" id="submit" type="submit" disabled>신청 시간을 확인하는 중…</button>
+   <div class="msg" id="msg" role="alert"></div>
+  </form>
+
+  <div class="ticket" id="ticket" aria-live="polite">
+   <div class="tk-top"><div class="tk-k">BOARDING PASS · 가을밤 천체관측</div><div class="tk-name" id="tkName"></div><div class="tk-st" id="tkSt"></div></div>
+   <div class="tk-bot"><div><small>접수번호</small><b id="tkNo"></b></div><div><small>일시</small><b>11. 23.(월) 17:50</b></div><div><small>집합</small><b>바우하우스</b></div></div>
+   <div class="tk-msg" id="tkMsg"></div>
+  </div>
+ </section>
+
+ <section>
+  <h2>신청 확인</h2>
+  <p class="lead">이미 신청했다면 확정인지 대기인지 여기서 확인할 수 있어요.</p>
+  <div class="lookup">
+   <div class="row3" id="lk">
+    <input type="text" name="grade" inputmode="numeric" placeholder="학년" maxlength="1" aria-label="학년">
+    <input type="text" name="cls" inputmode="numeric" placeholder="반" maxlength="2" aria-label="반">
+    <input type="text" name="num" inputmode="numeric" placeholder="번호" maxlength="2" aria-label="번호">
+    <input type="text" name="name" class="nm" placeholder="학생 이름" maxlength="10" aria-label="학생 이름">
+   </div>
+   <button class="btn2" id="lkBtn" type="button">확인하기</button>
+   <div class="res" id="lkRes"></div>
+  </div>
+ </section>
+
+ <footer>고천중학교 과학과 · 담당 김신연 · ☎ 031-458-8624<br>신청을 취소하려면 담당 선생님께 알려 주세요. 대기 순서대로 연락드립니다.</footer>
+</div>
+
+<script>
+/* ── 별하늘 ── */
+(function(){
+  const c=document.getElementById('sky'),g=c.getContext('2d');let W,H,S=[];const still=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function size(){const d=Math.min(2,devicePixelRatio||1);W=c.width=innerWidth*d;H=c.height=innerHeight*d;
+    S=Array.from({length:Math.round(innerWidth*innerHeight/2600)},()=>({x:Math.random()*W,y:Math.random()*H,r:(Math.random()<.08?1.6:Math.random()*.9+.3)*d,p:Math.random()*6.28,s:.4+Math.random()*1.2}));}
+  function draw(t){const gr=g.createLinearGradient(0,0,0,H);gr.addColorStop(0,'#050816');gr.addColorStop(.6,'#0a1033');gr.addColorStop(1,'#1a1640');g.fillStyle=gr;g.fillRect(0,0,W,H);
+    for(const s of S){const a=still?.8:.45+.55*Math.abs(Math.sin(s.p+t/1000*s.s));g.globalAlpha=a;g.fillStyle=s.r>1.5?'#fff3cf':'#dfe6ff';g.beginPath();g.arc(s.x,s.y,s.r,0,6.283);g.fill();}
+    g.globalAlpha=1; if(!still)requestAnimationFrame(draw);}
+  addEventListener('resize',size);size();requestAnimationFrame(draw);
+})();
+
+/* ── 서버 연결 ──
+   Apps Script 안에서 열리면 google.script.run, GitHub Pages에서 열리면 API 주소로 fetch.
+   파일을 그냥 열면(미리보기) 가짜 데이터 */
+const API='https://script.google.com/macros/s/AKfycbypivHo6Uc-DooZ4kEJpLwF2XzJLjjZ4zxemx_a3ql5_fY8SmZy7BZffimzWrOyLEObfA/exec';
+const GAS=!!(window.google&&google.script&&google.script.run);
+const PREVIEW=!GAS&&location.protocol==='file:';
+const fake={conf:21,waiting:0,list:[]};
+function run(fn,arg){return new Promise((ok,no)=>{
+  if(PREVIEW){setTimeout(()=>{
+    if(fn==='status')ok({now:Date.now(),openAt:Date.now()-1000,closeAt:Date.now()+864e5,cap:25,wait:5,conf:fake.conf,waiting:fake.waiting,full:false});
+    else if(fn==='apply'){let st=fake.conf<25?'확정':'대기';st==='확정'?fake.conf++:fake.waiting++;ok({ok:true,no:fake.conf+fake.waiting,status:st,rank:st==='확정'?fake.conf:fake.waiting,name:arg.name});}
+    else ok({ok:false,msg:'미리보기에서는 확인할 수 없어요.'});},500);return;}
+  if(GAS){google.script.run.withSuccessHandler(ok).withFailureHandler(e=>no(e&&e.message||String(e)))[fn](arg);return;}
+  fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({fn,arg:arg||{}})})
+    .then(r=>r.json()).then(j=>j&&j.error?no(j.error):ok(j)).catch(e=>no(String(e)));
+});}
+if(PREVIEW){const b=document.createElement('div');b.className='pv';b.textContent='미리보기';document.body.appendChild(b);}
+
+/* ── 남은 자리 · 신청 시간 ── */
+const $=s=>document.querySelector(s);
+let ST=null,skew=0;
+function makeDots(n){const b=$('#dots');if(b.children.length===n)return;b.innerHTML='';for(let i=0;i<n;i++){const d=document.createElement('i');d.className='dot';b.appendChild(d);}}
+function fmtLeft(ms){const s=Math.max(0,Math.floor(ms/1000)),d=Math.floor(s/86400),h=Math.floor(s%86400/3600),m=Math.floor(s%3600/60),x=s%60;
+  return (d?d+'일 ':'')+String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(x).padStart(2,'0');}
+function paint(){
+  if(!ST)return; makeDots(ST.cap); const now=Date.now()+skew, left=Math.max(0,ST.cap-ST.conf);
+  $('#left').innerHTML=left+'<small>/ '+ST.cap+'</small>';
+  $('#waitTxt').textContent=left>0?'대기 '+ST.waiting+' / '+ST.wait:'대기 남은 자리 '+Math.max(0,ST.wait-ST.waiting)+' / '+ST.wait;
+  document.querySelectorAll('.dot').forEach((d,i)=>d.classList.toggle('on',i>=ST.conf));
+  const btn=$('#submit'),cta=$('#toForm');
+  if(now<ST.openAt){$('#stateTxt').innerHTML='신청은 <b>11월 7일(토) 오전 9시</b>에 열려요 · 남은 시간 <b>'+fmtLeft(ST.openAt-now)+'</b>';btn.disabled=true;btn.textContent='11월 7일(토) 오전 9시에 열려요';cta.textContent='안내 먼저 읽어 보기';}
+  else if(now>ST.closeAt){$('#stateTxt').innerHTML='<b>신청이 마감되었어요.</b>';btn.disabled=true;btn.textContent='신청 마감';cta.textContent='신청 확인하기';}
+  else if(ST.full){$('#stateTxt').innerHTML='<b>정원과 대기 인원이 모두 찼어요.</b> 관심 가져 주셔서 고맙습니다!';btn.disabled=true;btn.textContent='모집 완료';cta.textContent='신청 확인하기';}
+  else{$('#stateTxt').innerHTML=left>0?'지금 신청할 수 있어요 · <b>'+left+'자리</b> 남았어요':'정원이 찼어요 · 지금 신청하면 <b>대기</b>로 접수돼요';btn.disabled=false;btn.textContent=left>0?'🚀 신청하기':'대기로 신청하기';cta.textContent=left>0?'신청하기':'대기로 신청하기';}
+}
+async function refresh(){try{ST=await run('status');skew=ST.now-Date.now();paint();}catch(e){$('#stateTxt').textContent='연결이 원활하지 않아요. 새로고침해 주세요.';}}
+refresh(); setInterval(paint,1000); setInterval(refresh,30000);
+/* Apps Script 페이지에서는 #링크가 창 전체를 이동시켜 빈 화면이 되므로, 스크립트로 스크롤 */
+$('#toForm').onclick=()=>{const t=(ST&&Date.now()+skew<ST.openAt)?document.querySelector('section'):(ST&&(Date.now()+skew>ST.closeAt||ST.full))?$('#lk'):$('#apply');t.scrollIntoView({behavior:'smooth',block:'start'});};
+
+/* ── 신청 ── */
+const val=(f,n)=>{const e=f.elements[n];return e?(e.value||'').trim():'';};
+$('#f').addEventListener('submit',async e=>{
+  e.preventDefault(); const f=e.target, m=$('#msg'); m.className='msg';
+  const data={grade:val(f,'grade'),cls:val(f,'cls'),num:val(f,'num'),name:val(f,'name'),who:val(f,'who'),phone:val(f,'phone'),home:val(f,'home'),agree:f.elements.agree.checked};
+  const bad=!data.grade?'학년을 골라 주세요.':!/^\d{1,2}$/.test(data.cls)?'반을 숫자로 적어 주세요.':!/^\d{1,2}$/.test(data.num)?'번호를 숫자로 적어 주세요.':data.name.length<2?'학생 이름을 적어 주세요.':!/^[0-9\-\s]{9,14}$/.test(data.phone)?'보호자 연락처를 확인해 주세요.':!data.home?'귀가 방법을 골라 주세요.':!data.agree?'개인정보 수집·이용에 동의해 주세요.':'';
+  if(bad){m.textContent=bad;m.className='msg err';return;}
+  const btn=$('#submit');btn.disabled=true;btn.textContent='접수하는 중…';
+  try{const r=await run('apply',data);
+    if(!r.ok){m.textContent=r.msg;m.className='msg err';refresh();btn.disabled=false;paint();return;}
+    f.style.display='none';
+    $('#tkName').textContent=data.grade+'학년 '+data.cls+'반 '+r.name;
+    const ok=r.status==='확정';$('#tkSt').className='tk-st '+(ok?'ok':'wait');$('#tkSt').textContent=ok?'참가 확정':'대기 '+r.rank+'번';
+    $('#tkNo').textContent='No. '+String(r.no).padStart(3,'0');
+    $('#tkMsg').innerHTML=ok?'11월 20일(금) 15:30 사전 안전교육에 꼭 참석해 주세요. 이 화면을 캡처해 두면 편해요.':'자리가 나면 대기 순서대로 담당 선생님이 연락드려요. 아래 \'신청 확인\'에서 언제든 상태를 볼 수 있어요.';
+    $('#ticket').classList.add('on'); $('#ticket').scrollIntoView({behavior:'smooth',block:'center'}); refresh();
+  }catch(err){m.textContent='접수에 실패했어요. 다시 눌러 주세요. ('+err+')';m.className='msg err';btn.disabled=false;paint();}
+});
+
+/* ── 신청 확인 ── */
+$('#lkBtn').onclick=async()=>{const q=n=>$('#lk [name='+n+']').value.trim(), o=$('#lkRes');
+  const d={grade:q('grade'),cls:q('cls'),num:q('num'),name:q('name')};
+  if(!d.grade||!d.cls||!d.num||!d.name){o.innerHTML='<span style="color:#ffd1dc">학년·반·번호·이름을 모두 적어 주세요.</span>';return;}
+  o.textContent='찾는 중…';
+  try{const r=await run('check',d);
+    o.innerHTML=r.ok?'<b>'+r.name+'</b> 학생은 <b style="color:'+(r.status==='확정'?'var(--mint)':r.status==='대기'?'var(--gold)':'var(--red)')+'">'+r.status+'</b> 상태예요. (접수번호 '+String(r.no).padStart(3,'0')+')':'<span style="color:#ffd1dc">'+r.msg+'</span>';
+  }catch(e){o.textContent='확인에 실패했어요. 잠시 뒤 다시 해 주세요.';}
+};
+</script>
+</body>
+</html>
