@@ -39,6 +39,7 @@ function doPost(e){
     if(p.fn==='status') out = status();
     else if(p.fn==='apply') out = apply(p.arg||{});
     else if(p.fn==='check') out = check(p.arg||{});
+    else if(p.fn==='pre') out = preApply(p.arg||{});
     else out = {error:'알 수 없는 요청'};
   }catch(err){ out = {error:String(err)}; }
   return ContentService.createTextOutput(JSON.stringify(out)).setMimeType(ContentService.MimeType.JSON);
@@ -60,7 +61,36 @@ function counts_(r){
 function status(){
   var now = new Date(), open = new Date(EVENT.OPEN_AT), close = new Date(EVENT.CLOSE_AT), c = counts_(rows_());
   return { now: now.getTime(), openAt: open.getTime(), closeAt: close.getTime(), cap: EVENT.CAP, wait: EVENT.WAIT,
-           conf: c.conf, waiting: c.wait, full: c.conf>=EVENT.CAP && c.wait>=EVENT.WAIT };
+           conf: c.conf, waiting: c.wait, full: c.conf>=EVENT.CAP && c.wait>=EVENT.WAIT, pre: preCount_() };
+}
+
+/* ───────── 예비신청: 정식 신청(OPEN_AT) 전까지 인원 파악용. 선착순 순서와는 무관 ───────── */
+var PRE_SHEET = '예비신청';
+var PRE_HEAD = ['신청시각','학년','반','번호','이름'];
+function preSh_(){
+  var ss = SpreadsheetApp.getActiveSpreadsheet(), s = ss.getSheetByName(PRE_SHEET);
+  if(!s){ s = ss.insertSheet(PRE_SHEET); s.appendRow(PRE_HEAD); s.setFrozenRows(1); s.getRange(1,1,1,PRE_HEAD.length).setFontWeight('bold').setBackground('#3b2a6e').setFontColor('#ffffff'); }
+  return s;
+}
+function preRows_(){ var s = preSh_(), n = s.getLastRow(); return n<2 ? [] : s.getRange(2,1,n-1,PRE_HEAD.length).getValues(); }
+function preCount_(){ return preRows_().length; }
+function preApply(f){
+  var lock = LockService.getScriptLock();
+  if(!lock.tryLock(20000)) return {ok:false, msg:'잠시 뒤 다시 눌러 주세요.'};
+  try{
+    if(new Date() >= new Date(EVENT.OPEN_AT)) return {ok:false, msg:'예비신청은 끝났어요. 이제 정식 신청을 해 주세요.'};
+    var g = clean_(f.grade,2), b = clean_(f.cls,3), num = clean_(f.num,3), name = clean_(f.name,20);
+    if(EVENT.GRADES.indexOf(g)<0) return {ok:false, msg:'1·2학년만 신청할 수 있어요.'};
+    if(!/^\d{1,2}$/.test(b) || !/^\d{1,2}$/.test(num)) return {ok:false, msg:'반과 번호를 숫자로 적어 주세요.'};
+    if(name.length<2) return {ok:false, msg:'이름을 정확히 적어 주세요.'};
+    var r = preRows_();
+    for(var i=0;i<r.length;i++){
+      if(String(r[i][1])===g && String(r[i][2])===b && String(r[i][3])===num)
+        return {ok:true, again:true, count:r.length};
+    }
+    preSh_().appendRow([new Date(), g, b, num, name]);
+    return {ok:true, count:r.length+1};
+  } finally { lock.releaseLock(); }
 }
 
 function clean_(v, n){ return String(v==null?'':v).replace(/[<>]/g,'').trim().slice(0, n||40); }
