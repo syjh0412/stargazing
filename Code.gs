@@ -19,7 +19,8 @@ var EVENT = {
   CLOSE_AT: '2026-11-10T18:00:00+09:00',  // 신청 마감
   CAP: 25,                                // 정원
   WAIT: 5,                                // 대기 인원
-  GRADES: ['1', '2']                      // 신청 가능 학년
+  GRADES: ['1'],                          // 정식 신청 가능 학년 — 2학년 추가 모집 때 ['1', '2'] 로 바꾸고 '새 버전' 배포
+  PRE_GRADES: ['1', '2']                  // 예비신청은 1·2학년 모두 (추가 모집 인원 가늠용)
 };
 var SHEET = '신청';
 var HEAD = ['접수번호','접수시각','상태','학년','반','번호','이름','신청자','보호자 연락처','귀가 방법','개인정보 동의'];
@@ -61,7 +62,7 @@ function counts_(r){
 function status(){
   var now = new Date(), open = new Date(EVENT.OPEN_AT), close = new Date(EVENT.CLOSE_AT), c = counts_(rows_());
   return { now: now.getTime(), openAt: open.getTime(), closeAt: close.getTime(), cap: EVENT.CAP, wait: EVENT.WAIT,
-           conf: c.conf, waiting: c.wait, full: c.conf>=EVENT.CAP && c.wait>=EVENT.WAIT, pre: preCount_() };
+           conf: c.conf, waiting: c.wait, full: c.conf>=EVENT.CAP && c.wait>=EVENT.WAIT, pre: preCount_(), grades: EVENT.GRADES };
 }
 
 /* ───────── 예비신청: 정식 신청(OPEN_AT) 전까지 인원 파악용. 선착순 순서와는 무관 ───────── */
@@ -80,7 +81,7 @@ function preApply(f){
   try{
     if(new Date() >= new Date(EVENT.OPEN_AT)) return {ok:false, msg:'예비신청은 끝났어요. 이제 정식 신청을 해 주세요.'};
     var g = clean_(f.grade,2), b = clean_(f.cls,3), num = clean_(f.num,3), name = clean_(f.name,20);
-    if(EVENT.GRADES.indexOf(g)<0) return {ok:false, msg:'1·2학년만 신청할 수 있어요.'};
+    if(EVENT.PRE_GRADES.indexOf(g)<0) return {ok:false, msg:'1·2학년만 예비 신청할 수 있어요.'};
     if(!/^\d{1,2}$/.test(b) || !/^\d{1,2}$/.test(num)) return {ok:false, msg:'반과 번호를 숫자로 적어 주세요.'};
     if(name.length<2) return {ok:false, msg:'이름을 정확히 적어 주세요.'};
     var r = preRows_();
@@ -105,7 +106,7 @@ function apply(f){
     if(now > new Date(EVENT.CLOSE_AT)) return {ok:false, msg:'신청이 마감되었어요.'};
     var g = clean_(f.grade,2), b = clean_(f.cls,3), num = clean_(f.num,3), name = clean_(f.name,20);
     var who = clean_(f.who,10), phone = clean_(f.phone,20), home = clean_(f.home,20);
-    if(EVENT.GRADES.indexOf(g)<0) return {ok:false, msg:'1·2학년만 신청할 수 있어요.'};
+    if(EVENT.GRADES.indexOf(g)<0) return {ok:false, msg: EVENT.GRADES.length===1 ? '지금은 1학년만 신청할 수 있어요. 자리가 남으면 2학년 추가 모집을 따로 안내할게요.' : '1·2학년만 신청할 수 있어요.'};
     if(!/^\d{1,2}$/.test(b) || !/^\d{1,2}$/.test(num)) return {ok:false, msg:'반과 번호를 숫자로 적어 주세요.'};
     if(name.length<2) return {ok:false, msg:'이름을 정확히 적어 주세요.'};
     if(!/^[0-9\-\s]{9,14}$/.test(phone)) return {ok:false, msg:'보호자 연락처를 확인해 주세요. (예: 010-1234-5678)'};

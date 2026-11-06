@@ -161,7 +161,7 @@ footer{margin-top:60px;padding-top:20px;border-top:1px solid var(--line);color:v
   <div class="chips">
    <span class="chip"><b>일시</b>11. 23.(월) 18:00 – 20:40</span>
    <span class="chip"><b>장소</b>바우하우스 · 운동장</span>
-   <span class="chip"><b>대상</b>1·2학년 25명 (선착순)</span>
+   <span class="chip"><b>대상</b>1학년 25명 (선착순, 미달 시 2학년 추가 모집)</span>
    <span class="chip"><b>참가비</b>무료</span>
   </div>
 
@@ -232,7 +232,7 @@ footer{margin-top:60px;padding-top:20px;border-top:1px solid var(--line);color:v
 
  <section id="apply">
   <h2>신청하기</h2>
-  <p class="lead" id="applyLead">11월 7일(토) 오전 9시부터 11월 10일(화) 오후 6시까지 선착순으로 받아요. 정원 25명이 차면 대기 5명까지 받습니다. 학생과 보호자 중 <b>한 분만</b> 신청해 주세요.</p>
+  <p class="lead" id="applyLead">11월 7일(토) 오전 9시부터 11월 10일(화) 오후 6시까지 선착순으로 받아요. <b>1학년 25명</b>을 먼저 모집하고, 자리가 남으면 2학년 추가 모집을 따로 안내해요. 정원 25명이 차면 대기 5명까지 받습니다. 학생과 보호자 중 <b>한 분만</b> 신청해 주세요.</p>
   <form id="f" novalidate>
    <div class="f"><span class="lb">학년<span class="req">*</span></span>
     <div class="seg"><label><input type="radio" name="grade" value="1">1학년</label><label><input type="radio" name="grade" value="2">2학년</label></div></div>
@@ -335,7 +335,7 @@ function paint(){
   document.querySelectorAll('.dot').forEach((d,i)=>d.classList.toggle('on',i>=ST.conf));
   const btn=$('#submit'),cta=$('#toForm');
   const preOn=now<ST.openAt; $('#pre').hidden=!preOn;
-  if(preOn){$('#stateTxt').innerHTML='정식 신청은 <b>11월 7일(토) 오전 9시</b> · 남은 시간 <b>'+fmtLeft(ST.openAt-now)+'</b><br>지금은 인원 제한 없이 <b>예비 신청</b>을 받고 있어요. 정식 신청 정원은 25명이에요.';btn.disabled=true;btn.textContent='11월 7일(토) 오전 9시에 열려요';cta.textContent='✋ 예비 신청하기';}
+  if(preOn){$('#stateTxt').innerHTML='정식 신청은 <b>11월 7일(토) 오전 9시</b> · 남은 시간 <b>'+fmtLeft(ST.openAt-now)+'</b><br>지금은 인원 제한 없이 <b>예비 신청</b>을 받고 있어요. 정식 신청은 1학년 25명이에요(미달 시 2학년 추가 모집).';btn.disabled=true;btn.textContent='11월 7일(토) 오전 9시에 열려요';cta.textContent='✋ 예비 신청하기';}
   else if(now>ST.closeAt){$('#stateTxt').innerHTML='<b>신청이 마감되었어요.</b>';btn.disabled=true;btn.textContent='신청 마감';cta.textContent='신청 확인하기';}
   else if(ST.full){$('#stateTxt').innerHTML='<b>정원과 대기 인원이 모두 찼어요.</b> 관심 가져 주셔서 고맙습니다!';btn.disabled=true;btn.textContent='모집 완료';cta.textContent='신청 확인하기';}
   else{$('#stateTxt').innerHTML=left>0?'지금 신청할 수 있어요 · <b>'+left+'자리</b> 남았어요':'정원이 찼어요 · 지금 신청하면 <b>대기</b>로 접수돼요';btn.disabled=false;btn.textContent=left>0?'🚀 신청하기':'대기로 신청하기';cta.textContent=left>0?'신청하기':'대기로 신청하기';}
@@ -365,7 +365,7 @@ const val=(f,n)=>{const e=f.elements[n];return e?(e.value||'').trim():'';};
 $('#f').addEventListener('submit',async e=>{
   e.preventDefault(); const f=e.target, m=$('#msg'); m.className='msg';
   const data={grade:val(f,'grade'),cls:val(f,'cls'),num:val(f,'num'),name:val(f,'name'),who:val(f,'who'),phone:val(f,'phone'),home:val(f,'home'),agree:f.elements.agree.checked};
-  const bad=!data.grade?'학년을 골라 주세요.':!/^\d{1,2}$/.test(data.cls)?'반을 숫자로 적어 주세요.':!/^\d{1,2}$/.test(data.num)?'번호를 숫자로 적어 주세요.':data.name.length<2?'학생 이름을 적어 주세요.':!/^[0-9\-\s]{9,14}$/.test(data.phone)?'보호자 연락처를 확인해 주세요.':!data.home?'귀가 방법을 골라 주세요.':!data.agree?'개인정보 수집·이용에 동의해 주세요.':'';
+  const bad=!data.grade?'학년을 골라 주세요.':(ST&&ST.grades&&ST.grades.indexOf(data.grade)<0)?'지금은 1학년만 신청할 수 있어요. 자리가 남으면 2학년 추가 모집을 따로 안내할게요.':!/^\d{1,2}$/.test(data.cls)?'반을 숫자로 적어 주세요.':!/^\d{1,2}$/.test(data.num)?'번호를 숫자로 적어 주세요.':data.name.length<2?'학생 이름을 적어 주세요.':!/^[0-9\-\s]{9,14}$/.test(data.phone)?'보호자 연락처를 확인해 주세요.':!data.home?'귀가 방법을 골라 주세요.':!data.agree?'개인정보 수집·이용에 동의해 주세요.':'';
   if(bad){m.textContent=bad;m.className='msg err';return;}
   const btn=$('#submit');btn.disabled=true;btn.textContent='접수하는 중…';
   try{const r=await run('apply',data);
