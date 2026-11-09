@@ -17,7 +17,7 @@
 var EVENT = {
   OPEN_AT: '2026-11-07T09:00:00+09:00',   // 신청 시작 (이 시각 전에는 버튼이 잠김)
   CLOSE_AT: '2026-11-10T18:00:00+09:00',  // 신청 마감
-  CAP: 25,                                // 정원
+  CAP: 30,                                // 정원 (11/9: 처음 대기 5명까지 모두 확정해 30명)
   WAIT: 5,                                // 대기 인원
   GRADES: ['1'],                          // 정식 신청 가능 학년 — 2학년 추가 모집 때 ['1', '2'] 로 바꾸고 '새 버전' 배포
   PRE_GRADES: ['1', '2'],                 // 예비신청은 1·2학년 모두 (추가 모집 인원 가늠용)
@@ -68,7 +68,7 @@ function counts_(r){
 function status(){
   var now = new Date(), open = new Date(EVENT.OPEN_AT), close = new Date(EVENT.CLOSE_AT), c = counts_(rows_());
   return { now: now.getTime(), openAt: open.getTime(), closeAt: close.getTime(), cap: EVENT.CAP, wait: EVENT.WAIT,
-           conf: c.conf, waiting: c.wait, full: c.conf>=EVENT.CAP && c.wait>=EVENT.WAIT, pre: preCount_(), grades: EVENT.GRADES, reflectAt: new Date(EVENT.REFLECT_AT).getTime() };
+           conf: c.conf, waiting: c.wait, full: (c.conf>=EVENT.CAP || c.wait>0) && c.wait>=EVENT.WAIT, pre: preCount_(), grades: EVENT.GRADES, reflectAt: new Date(EVENT.REFLECT_AT).getTime() };
 }
 
 /* ───────── 예비신청: 정식 신청(OPEN_AT) 전까지 인원 파악용. 선착순 순서와는 무관 ───────── */
@@ -125,7 +125,8 @@ function apply(f){
         return {ok:false, dup:true, msg:'이미 신청되어 있어요. (접수번호 '+r[i][0]+', '+r[i][2]+') 아래 \'신청 확인\'에서 볼 수 있어요.'};
     }
     var c = counts_(r), st;
-    if(c.conf < EVENT.CAP) st = '확정';
+    /* 대기자가 한 명이라도 있으면 빈자리가 생겨도 새 신청은 대기로 — 빈자리는 선생님이 대기 순서대로 연락 */
+    if(c.conf < EVENT.CAP && c.wait === 0) st = '확정';
     else if(c.wait < EVENT.WAIT) st = '대기';
     else return {ok:false, msg:'정원과 대기 인원이 모두 찼어요. 관심 가져 주셔서 고맙습니다!'};
     var no = r.length + 1;
@@ -183,7 +184,9 @@ function me(f){
   if(!p) return {ok:false, msg:'참가자 명단에서 찾지 못했어요. 학년·반·번호·이름을 신청할 때와 똑같이 적어 주세요.'};
   var pre = rowOf_(tab_(PREACT_SHEET, PREACT_HEAD, '#3b2a6e'), PREACT_HEAD, w);
   var rf = rowOf_(tab_(REFL_SHEET, REFL_HEAD, '#0f5c4d'), REFL_HEAD, w);
-  return {ok:true, name:w.name, no:p.no, absent: p.status==='불참 알림',
+  var wrank = 0;
+  if(p.status==='대기'){ var r = rows_(); for(var i=0;i<r.length && i+2<=p.row;i++) if(String(r[i][2])==='대기') wrank++; }
+  return {ok:true, name:w.name, no:p.no, absent: p.status==='불참 알림', status: p.status, waitRank: wrank,
           pre: pre ? pre.vals.slice(5) : null, refl: rf ? rf.vals.slice(5) : null,
           reflectAt: new Date(EVENT.REFLECT_AT).getTime(), now: Date.now()};
 }

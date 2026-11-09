@@ -186,7 +186,7 @@ footer{margin-top:60px;padding-top:20px;border-top:1px solid var(--line);color:v
   <div class="chips">
    <span class="chip"><b>일시</b>11. 23.(월) 18:00 – 20:40</span>
    <span class="chip"><b>장소</b>바우하우스 · 운동장</span>
-   <span class="chip"><b>대상</b>1학년 25명 (선착순, 미달 시 2학년 추가 모집)</span>
+   <span class="chip"><b>대상</b>1학년 30명 (모집 완료 · 대기 신청 중)</span>
    <span class="chip"><b>참가비</b>무료</span>
   </div>
 
@@ -198,6 +198,7 @@ footer{margin-top:60px;padding-top:20px;border-top:1px solid var(--line);color:v
    <div class="dots" id="dots"></div>
    <div class="state" id="stateTxt">불러오는 중…</div>
    <button class="cta" id="toForm" type="button">신청하기</button>
+   <button class="btn2" id="toWait" type="button" hidden>✋ 대기 신청하러 가기</button>
   </div>
  </header>
 
@@ -450,7 +451,7 @@ const PREVIEW=!GAS&&location.protocol==='file:';
 const fake={conf:21,waiting:0,list:[]};
 function run(fn,arg){return new Promise((ok,no)=>{
   if(PREVIEW){setTimeout(()=>{
-    if(fn==='status'){const cr=location.hash.indexOf('crew')>=0;ok({now:Date.now(),openAt:Date.now()+((location.hash==='#open'||cr)?-1000:3*864e5),pre:fake.pre||7,closeAt:Date.now()+864e5,cap:25,wait:5,conf:cr?25:fake.conf,waiting:cr?5:fake.waiting,full:cr});}
+    if(fn==='status'){const cr=location.hash.indexOf('crew')>=0;ok({now:Date.now(),openAt:Date.now()+((location.hash==='#open'||cr)?-1000:3*864e5),pre:fake.pre||7,closeAt:Date.now()+864e5,cap:30,wait:5,conf:cr?30:fake.conf,waiting:cr?(location.hash.indexOf('full')>=0?5:1):fake.waiting,full:cr&&location.hash.indexOf('full')>=0});}
     else if(fn==='me'){ok(arg.name?{ok:true,name:arg.name,no:7,absent:false,pre:null,refl:null,reflectAt:location.hash.indexOf('after')>=0?0:Date.now()+864e5}:{ok:false,msg:'못 찾음'});}
     else if(fn==='savePre'||fn==='saveRefl'||fn==='absent'){ok({ok:true});}
     else if(fn==='pre'){fake.pre=(fake.pre||7)+1;ok({ok:true,count:fake.pre});}
@@ -479,8 +480,16 @@ function paint(){
   const btn=$('#submit'),cta=$('#toForm');
   const preOn=now<ST.openAt; $('#pre').hidden=!preOn;
   /* 모집이 끝나면(정원·대기 다 참 또는 마감) 참가자 공간을 보여 주고 신청 칸은 숨김 */
-  const crewOn=!preOn&&(ST.full||now>ST.closeAt);
-  $('#crew').hidden=!crewOn; $('#apply').hidden=crewOn; $('#lk').closest('section').hidden=crewOn;
+  /* 정원이 차면 참가자 공간을 열고, 마감 전이고 대기 자리가 남았으면 대기 신청 칸도 함께 보여 줌 */
+  const crewOn=!preOn&&(ST.conf>=ST.cap||ST.full||now>ST.closeAt);
+  const waitOpen=crewOn&&!ST.full&&now<=ST.closeAt; $('#toWait').hidden=!waitOpen;
+  $('#crew').hidden=!crewOn; $('#apply').hidden=crewOn&&!waitOpen; $('#lk').closest('section').hidden=crewOn&&!waitOpen;
+  if(waitOpen){$('#applyLead').innerHTML='정원 30명이 모두 찼어요. 지금은 <b>대기 신청</b>만 받아요(5명, 11월 10일(화) 오후 6시까지). 참가자 중 빈자리가 생기면 <b>대기 순서대로 담당 선생님이 연락</b>드려요.';
+    btn.disabled=false;btn.textContent='대기로 신청하기';}
+  if(crewOn&&waitOpen){$('#seatLb').textContent='참가 확정';$('#dots').style.display='none';$('#waitTxt').style.display='';
+    $('#left').innerHTML=ST.conf+'<small>명 확정</small>';$('#waitTxt').textContent='대기 '+ST.waiting+' / '+ST.wait;
+    $('#stateTxt').innerHTML='정원이 찼어요. 지금은 <b>대기 신청</b>만 받아요(남은 대기 '+Math.max(0,ST.wait-ST.waiting)+'자리). 빈자리가 생기면 대기 순서대로 연락드려요.<br>참가자는 <b>참가자 공간</b>에서 일정과 미션을 확인해 주세요.';
+    cta.textContent='🔭 참가자 공간 들어가기'; return;}
   if(crewOn){$('#seatLb').textContent='모집 완료';$('#dots').style.display='none';$('#waitTxt').style.display='none';
     $('#left').innerHTML=(ST.conf+ST.waiting)+'<small>명 참가</small>';
     $('#stateTxt').innerHTML='신청해 줘서 고마워요! 참가자는 <b>참가자 공간</b>에서 일정·안전 약속을 확인하고 <b>관측 전 미션</b>을 해 주세요.';
@@ -495,6 +504,7 @@ refresh(); setInterval(paint,1000); setInterval(refresh,30000);
 /* Apps Script 페이지에서는 #링크가 창 전체를 이동시켜 빈 화면이 되므로, 스크립트로 스크롤 */
 $('#toForm').onclick=()=>{const t=(ST&&!$('#crew').hidden)?$('#crew'):(ST&&Date.now()+skew<ST.openAt)?$('#pre'):(ST&&(Date.now()+skew>ST.closeAt||ST.full))?$('#lk'):$('#apply');t.scrollIntoView({behavior:'smooth',block:'start'});};
 
+$('#toWait').onclick=()=>$('#apply').scrollIntoView({behavior:'smooth',block:'start'});
 /* ── 참가자 공간 ── */
 let ME=null, MEINFO=null;
 const LS={get(){try{return JSON.parse(localStorage.getItem('sg_me')||'null')}catch(e){return null}},set(v){try{v?localStorage.setItem('sg_me',JSON.stringify(v)):localStorage.removeItem('sg_me')}catch(e){}}};
@@ -502,7 +512,7 @@ const ANS={q1:['거의 보름달','11월 23일은 보름(24일) 바로 전날이
 const pick=n=>(document.querySelector('input[name='+n+']:checked')||{}).value||'';
 const setPick=(n,v)=>{const e=v&&document.querySelector('input[name='+n+'][value="'+String(v).replace(/"/g,'')+'"]');if(e)e.checked=true;};
 function fillCrew(r){
-  MEINFO=r; $('#cName').textContent=r.name; $('#cTag').textContent='참가 확정 · No. '+String(r.no).padStart(3,'0');
+  MEINFO=r; $('#cName').textContent=r.name; const wt=r.status==='대기'; $('#cTag').textContent=wt?'대기 '+r.waitRank+'번 · 빈자리가 생기면 연락드려요':'참가 확정 · No. '+String(r.no).padStart(3,'0'); $('#cTag').className=wt?'tag':'tag mint';
   const p=r.pre||[]; $('#aSafety').checked=p[0]==='동의'; setPick('want',p[1]); $('#aWhy').value=p[2]||''; setPick('q1',p[3]); setPick('q2',p[4]); setPick('q3',p[5]); $('#aAsk').value=p[6]||'';
   if(r.pre)$('#aSaved').textContent='✔ 저장된 미션이 있어요. 고쳐서 다시 저장해도 돼요.';
   const open=(Date.now()+skew)>=r.reflectAt; $('#rLock').hidden=open; $('#rForm').hidden=!open;
