@@ -74,7 +74,7 @@ form,.lookup{background:#0f1738f2;border:1px solid var(--line);border-radius:18p
 .f>label,.f>.lb{display:block;font-weight:700;margin-bottom:6px;font-size:.98rem}
 .req{color:var(--gold);margin-left:3px}
 .row3{display:grid;grid-template-columns:1fr 1fr 1.4fr;gap:10px}
-input[type=text],input[type=tel]{width:100%;min-height:50px;border-radius:12px;border:1px solid #33407a;background:#080d24;color:var(--ink);font-size:1.05rem;padding:10px 14px;font-family:inherit}
+input[type=text],input[type=tel],input[type=password]{width:100%;min-height:50px;border-radius:12px;border:1px solid #33407a;background:#080d24;color:var(--ink);font-size:1.05rem;padding:10px 14px;font-family:inherit}
 input:focus{outline:2px solid var(--gold);outline-offset:1px;border-color:transparent}
 .seg{display:flex;gap:8px;flex-wrap:wrap}
 .seg label{flex:1;min-width:120px;display:flex;align-items:center;justify-content:center;gap:8px;min-height:50px;border-radius:12px;border:1px solid #33407a;background:#080d24;cursor:pointer;font-weight:500;text-align:center;padding:8px 10px;font-size:.98rem}
@@ -294,6 +294,9 @@ footer{margin-top:60px;padding-top:20px;border-top:1px solid var(--line);color:v
     <input type="text" name="num" inputmode="numeric" placeholder="번호" maxlength="2" aria-label="번호">
     <input type="text" name="name" class="nm" placeholder="학생 이름" maxlength="10" aria-label="학생 이름" autocomplete="off">
    </div>
+   <div class="f" style="margin:12px 0 0"><label for="cCode" style="display:block;font-weight:700;margin-bottom:6px">🔑 별빛 암호 <small style="font-weight:400;color:var(--faint)">숫자 4자리</small></label>
+    <input type="password" id="cCode" inputmode="numeric" maxlength="4" placeholder="●●●●" autocomplete="off" style="letter-spacing:.4em;font-size:1.2rem">
+    <div class="hint">처음 들어올 때 적은 숫자가 <b style="color:var(--gold)">나만의 별빛 암호</b>가 돼요. 다음부터는 이 암호로 들어와요. 친구에게 알려 주지 마세요!</div></div>
    <button class="cta" id="cGo" type="button">🔭 참가자 공간 들어가기</button>
    <button class="btn2" id="cT" type="button" hidden>👩‍🏫 선생님 미리보기로 둘러보기</button>
    <div class="msg" id="cMsg" role="alert"></div>
@@ -679,8 +682,8 @@ footer{margin-top:60px;padding-top:20px;border-top:1px solid var(--line);color:v
 
    <div class="crewcard">
     <h3>📋 참가자 명단 · 출석 체크</h3>
-    <p class="sub2">체크는 이 기기에만 저장돼요. 보호자 연락처는 담당 교사에게 문의해 주세요.</p>
-    <div style="overflow-x:auto"><table class="roster"><thead><tr><th>출석</th><th>학년-반-번호</th><th>이름</th><th>상태</th><th>귀가</th></tr></thead><tbody id="tRoster"><tr><td colspan="5" style="color:var(--dim)">불러오는 중…</td></tr></tbody></table></div>
+    <p class="sub2">체크는 이 기기에만 저장돼요. 보호자 연락처는 담당 교사에게 문의해 주세요. 🔑는 별빛 암호를 정한 학생이에요. 암호를 잊은 학생은 시트 '별빛암호' 탭에서 그 줄을 지우면 새로 정할 수 있어요.</p>
+    <div style="overflow-x:auto"><table class="roster"><thead><tr><th>출석</th><th>학년-반-번호</th><th>이름</th><th>상태</th><th>귀가</th><th>암호</th></tr></thead><tbody id="tRoster"><tr><td colspan="5" style="color:var(--dim)">불러오는 중…</td></tr></tbody></table></div>
     <button class="linkbtn" id="tClear" type="button">출석 체크 모두 지우기</button>
    </div>
   </div>
@@ -711,7 +714,7 @@ const fake={conf:21,waiting:0,list:[]};
 function run(fn,arg){return new Promise((ok,no)=>{
   if(PREVIEW){setTimeout(()=>{
     if(fn==='status'){const cr=location.hash.indexOf('crew')>=0;ok({now:Date.now(),openAt:Date.now()+((location.hash==='#open'||cr)?-1000:3*864e5),pre:fake.pre||7,closeAt:Date.now()+864e5,cap:30,wait:5,conf:cr?30:fake.conf,waiting:cr?(location.hash.indexOf('full')>=0?5:1):fake.waiting,full:cr&&location.hash.indexOf('full')>=0});}
-    else if(fn==='me'){ok(arg.name?{ok:true,name:arg.name,no:7,absent:false,pre:null,refl:null,reflectAt:location.hash.indexOf('after')>=0?0:Date.now()+864e5}:{ok:false,msg:'못 찾음'});}
+    else if(fn==='me'){ok(arg.name?{ok:true,firstCode:true,name:arg.name,no:7,absent:false,pre:null,refl:null,reflectAt:location.hash.indexOf('after')>=0?0:Date.now()+864e5}:{ok:false,msg:'못 찾음'});}
     else if(fn==='staff'){ok(arg.pin==='1234'?{ok:true,people:[{no:1,st:'확정',g:'1',b:'2',n:'5',name:'김하늘',home:'보호자 동행'},{no:2,st:'확정',g:'1',b:'3',n:'12',name:'이별',home:'단독 귀가(보호자 동의)'},{no:31,st:'대기',g:'1',b:'4',n:'2',name:'박달',home:'보호자 동행'}],preCount:12,safeCount:11,wants:{'토성':7,'달':3,'성단':2},asks:[{who:'1-2 김하늘',q:'토성 고리는 왜 생겼나요?'}],reflCount:0,absents:[]}:{ok:false,msg:'비밀번호가 맞지 않아요.'});}
     else if(fn==='savePre'||fn==='saveRefl'||fn==='absent'){ok({ok:true});}
     else if(fn==='pre'){fake.pre=(fake.pre||7)+1;ok({ok:true,count:fake.pre});}
@@ -795,7 +798,7 @@ function renderStaff(d){
   $('#tAskBox').hidden=!d.asks.length; $('#tAsk').innerHTML=d.asks.map(a=>'<li>'+esc(a.q)+' <span style="color:var(--faint)">— '+esc(a.who)+'</span></li>').join('');
   $('#tAbsBox').hidden=!d.absents.length; $('#tAbs').innerHTML=d.absents.map(a=>'<li><b>'+esc(a.who)+'</b> · '+esc(a.why)+(a.done?' <span class="tag mint">'+esc(a.done)+'</span>':'')+'</li>').join('');
   const att=TL.get();
-  $('#tRoster').innerHTML=d.people.map(x=>{const k=x.g+'-'+x.b+'-'+x.n;return '<tr'+(x.st!=='확정'?' style="color:var(--faint)"':'')+'><td><input type="checkbox" data-k="'+k+'" aria-label="'+esc(x.name)+' 출석"'+(att[k]?' checked':'')+'></td><td>'+k+'</td><td>'+esc(x.name)+'</td><td>'+esc(x.st)+'</td><td>'+(String(x.home).indexOf('단독')>=0?'혼자':'보호자')+'</td></tr>';}).join('')||'<tr><td colspan="5">명단이 없어요.</td></tr>';
+  $('#tRoster').innerHTML=d.people.map(x=>{const k=x.g+'-'+x.b+'-'+x.n;return '<tr'+(x.st!=='확정'?' style="color:var(--faint)"':'')+'><td><input type="checkbox" data-k="'+k+'" aria-label="'+esc(x.name)+' 출석"'+(att[k]?' checked':'')+'></td><td>'+k+'</td><td>'+esc(x.name)+'</td><td>'+esc(x.st)+'</td><td>'+(String(x.home).indexOf('단독')>=0?'혼자':'보호자')+'</td><td>'+(x.code?'🔑':'-')+'</td></tr>';}).join('')||'<tr><td colspan="6">명단이 없어요.</td></tr>';
   document.querySelectorAll('#tRoster input').forEach(c=>c.onchange=()=>{const a=TL.get();a[c.dataset.k]=c.checked;TL.set(a);});
 }
 async function staffLoad(pin,first){
@@ -847,9 +850,9 @@ function fillCrew(r){
   $('#absBox').hidden=!!r.absent; $('#absDone').hidden=!r.absent;
   $('#cLogin').hidden=true; $('#cIn').hidden=false; setSub(open?'post':(r.pre?'info':'pre'));
 }
-function celebrate(name,wait,rank){
+function celebrate(name,wait,rank,first){
   const o=document.createElement('div');o.id='cel';o.setAttribute('role','dialog');o.setAttribute('aria-label','축하 메시지');
-  o.innerHTML='<div class="bx"><div class="big">'+(wait?'🌙':'🔭')+'</div><h3>'+(wait?esc(name)+', 대기 '+rank+'번!':'축하해요, '+esc(name)+'!')+'</h3><p>'+(wait?'빈자리가 생기면 순서대로 연락드릴게요.<br>일정과 안전 약속을 미리 봐 두세요.':'11월 23일 밤, 달과 토성이 기다리고 있어요.<br>관측 전 미션도 해 봐요!')+'</p><div class="tap">화면을 누르면 닫혀요</div></div>';
+  o.innerHTML='<div class="bx"><div class="big">'+(wait?'🌙':'🔭')+'</div><h3>'+(wait?esc(name)+', 대기 '+rank+'번!':'축하해요, '+esc(name)+'!')+'</h3><p>'+(wait?'빈자리가 생기면 순서대로 연락드릴게요.<br>일정과 안전 약속을 미리 봐 두세요.':'11월 23일 밤, 달과 토성이 기다리고 있어요.<br>관측 전 미션도 해 봐요!')+'</p>'+(first?'<p style="margin-top:12px;color:var(--gold);font-weight:700">🔑 별빛 암호를 정했어요! 다음에도 이 숫자로 들어와요.</p>':'')+'<div class="tap">화면을 누르면 닫혀요</div></div>';
   document.body.appendChild(o); requestAnimationFrame(()=>o.classList.add('on'));
   if(!matchMedia('(prefers-reduced-motion: reduce)').matches){
     const em=wait?['⭐','✨','🌙','💫']:['🌕','🪐','⭐','✨','🌟','🔭','☄️','💫','🌌'];
@@ -866,16 +869,17 @@ function celebrate(name,wait,rank){
 function esc(t){return String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 async function crewLogin(d,quiet){
   const m=$('#cMsg'); m.className='msg';
-  try{const r=await run('me',d); if(!r.ok){if(!quiet){m.textContent=r.msg;m.className='msg err';} LS.set(null); return;}
+  try{const r=await run('me',d); if(!r.ok){if(!quiet){m.textContent=r.msg;m.className='msg err';if(r.badCode)$('#cCode').value='';} LS.set(null); return;}
     ME=d; LS.set(d); fillCrew(r);
     const key='sg_cel_'+d.grade+d.cls+d.num+(r.status||''); let seen=false; try{seen=!!localStorage.getItem(key);}catch(e){}
-    if(!quiet||!seen){celebrate(r.name,r.status==='대기',r.waitRank); try{localStorage.setItem(key,'1');}catch(e){}}
+    if(!quiet||!seen||r.firstCode){celebrate(r.name,r.status==='대기',r.waitRank,r.firstCode); try{localStorage.setItem(key,'1');}catch(e){}}
   }catch(e){if(!quiet){m.textContent='연결이 원활하지 않아요. 다시 눌러 주세요.';m.className='msg err';}}
 }
-$('#cGo').onclick=()=>{const q=n=>$('#cF [name='+n+']').value.trim(); const d={grade:q('grade'),cls:q('cls'),num:q('num'),name:q('name')};
+$('#cGo').onclick=()=>{const q=n=>$('#cF [name='+n+']').value.trim(); const d={grade:q('grade'),cls:q('cls'),num:q('num'),name:q('name'),code:$('#cCode').value.trim()};
   if(!d.grade||!d.cls||!d.num||!d.name){$('#cMsg').textContent='학년·반·번호·이름을 모두 적어 주세요.';$('#cMsg').className='msg err';return;}
+  if(!/^\d{4}$/.test(d.code)){$('#cMsg').textContent='별빛 암호를 숫자 4자리로 적어 주세요.';$('#cMsg').className='msg err';return;}
   const b=$('#cGo');b.disabled=true;b.textContent='찾는 중…'; crewLogin(d).finally(()=>{b.disabled=false;b.textContent='🔭 참가자 공간 들어가기';});};
-$('#cOut').onclick=()=>{ME=null;TMODE=false;$('#cOut').textContent='다른 학생으로 들어가기';LS.set(null);$('#cIn').hidden=true;$('#cLogin').hidden=false;document.querySelectorAll('#cIn input[type=radio],#cIn input[type=checkbox]').forEach(e=>e.checked=false);document.querySelectorAll('#cIn textarea,#cIn input[type=text]').forEach(e=>e.value='');$('#aSaved').textContent='';$('#rSaved').textContent='';};
+$('#cOut').onclick=()=>{ME=null;TMODE=false;$('#cCode').value='';$('#cOut').textContent='다른 학생으로 들어가기';LS.set(null);$('#cIn').hidden=true;$('#cLogin').hidden=false;document.querySelectorAll('#cIn input[type=radio],#cIn input[type=checkbox]').forEach(e=>e.checked=false);document.querySelectorAll('#cIn textarea,#cIn input[type=text]').forEach(e=>e.value='');$('#aSaved').textContent='';$('#rSaved').textContent='';};
 {const saved=LS.get(); if(saved) crewLogin(saved,true);}
 $('#aSave').onclick=async()=>{const o=$('#aSaved'),b=$('#aSave'); if(TMODE){o.textContent='👩‍🏫 선생님 미리보기에서는 저장되지 않아요.';return;} if(!ME)return;
   const a={safety:$('#aSafety').checked,want:pick('want'),why:$('#aWhy').value.trim(),q1:pick('q1'),q2:pick('q2'),q3:pick('q3'),ask:$('#aAsk').value.trim()};

@@ -188,11 +188,13 @@ function upsert_(t, head, w, vals){
 function me(f){
   var w = who_(f), p = findP_(w);
   if(!p) return {ok:false, msg:'참가자 명단에서 찾지 못했어요. 학년·반·번호·이름을 신청할 때와 똑같이 적어 주세요.'};
+  var cc = checkCode_(w, f.code, true);
+  if(cc && cc!=='new') return {ok:false, msg:cc, badCode:true};
   var pre = rowOf_(tab_(PREACT_SHEET, PREACT_HEAD, '#3b2a6e'), PREACT_HEAD, w);
   var rf = rowOf_(tab_(REFL_SHEET, REFL_HEAD, '#0f5c4d'), REFL_HEAD, w);
   var wrank = 0;
   if(p.status==='대기'){ var r = rows_(); for(var i=0;i<r.length && i+2<=p.row;i++) if(String(r[i][2])==='대기') wrank++; }
-  return {ok:true, name:w.name, no:p.no, absent: p.status==='불참 알림', status: p.status, waitRank: wrank,
+  return {ok:true, firstCode: cc==='new', name:w.name, no:p.no, absent: p.status==='불참 알림', status: p.status, waitRank: wrank,
           pre: pre ? pre.vals.slice(5) : null, refl: rf ? rf.vals.slice(5) : null,
           reflectAt: new Date(EVENT.REFLECT_AT).getTime(), now: Date.now()};
 }
@@ -201,6 +203,7 @@ function absent(f){
   try{
     var w = who_(f), p = findP_(w), why = clean_(f.reason, 200);
     if(!p) return {ok:false, msg:'참가자 명단에서 찾지 못했어요.'};
+    var cc = checkCode_(w, f.code, false); if(cc) return {ok:false, msg:cc};
     if(why.length<2) return {ok:false, msg:'못 오는 까닭을 짧게 적어 주세요.'};
     sh().getRange(p.row, 3).setValue('불참 알림');
     tab_(ABS_SHEET, ABS_HEAD, '#7a2c47').appendRow([new Date(), w.g, w.b, w.n, w.name, why, '']);
@@ -213,6 +216,7 @@ function absent(f){
 }
 function savePre(f){
   var w = who_(f); if(!findP_(w)) return {ok:false, msg:'참가자 명단에서 찾지 못했어요.'};
+  var cc = checkCode_(w, f.code, false); if(cc) return {ok:false, msg:cc};
   var a = f.a || {};
   upsert_(tab_(PREACT_SHEET, PREACT_HEAD, '#3b2a6e'), PREACT_HEAD, w,
     [a.safety?'동의':'', clean_(a.want,20), clean_(a.why,200), clean_(a.q1,20), clean_(a.q2,20), clean_(a.q3,20), clean_(a.ask,200)]);
@@ -220,6 +224,7 @@ function savePre(f){
 }
 function saveRefl(f){
   var w = who_(f); if(!findP_(w)) return {ok:false, msg:'참가자 명단에서 찾지 못했어요.'};
+  var cc = checkCode_(w, f.code, false); if(cc) return {ok:false, msg:cc};
   if(new Date() < new Date(EVENT.REFLECT_AT)) return {ok:false, msg:'관측 일지는 관측이 끝난 뒤(11/23 20:30)부터 쓸 수 있어요.'};
   var a = f.a || {};
   upsert_(tab_(REFL_SHEET, REFL_HEAD, '#0f5c4d'), REFL_HEAD, w,
@@ -232,7 +237,8 @@ function saveRefl(f){
 function staff(f){
   if(String(f.pin||'') !== String(EVENT.STAFF_PIN)) return {ok:false, msg:'비밀번호가 맞지 않아요.'};
   var r = rows_(), people = [];
-  r.forEach(function(x){ var st=String(x[2]); if(st==='확정'||st==='대기'||st==='불참 알림') people.push({no:x[0], st:st, g:String(x[3]), b:String(x[4]), n:String(x[5]), name:String(x[6]), home:String(x[9])}); });
+  var ct = tab_(CODE_SHEET, CODE_HEAD, '#5b3a9e');
+  r.forEach(function(x){ var st=String(x[2]); if(st==='확정'||st==='대기'||st==='불참 알림'){ var pw={g:String(x[3]),b:String(x[4]),n:String(x[5])}; people.push({no:x[0], st:st, g:pw.g, b:pw.b, n:pw.n, name:String(x[6]), home:String(x[9]), code: !!rowOf_(ct, CODE_HEAD, pw)}); } });
   people.sort(function(a,b){ return (Number(a.g)-Number(b.g)) || (Number(a.b)-Number(b.b)) || (Number(a.n)-Number(b.n)); });
   var pre = tab_(PREACT_SHEET, PREACT_HEAD, '#3b2a6e'), pv = pre.getLastRow()>1 ? pre.getRange(2,1,pre.getLastRow()-1,PREACT_HEAD.length).getValues() : [];
   var asks = pv.filter(function(x){ return String(x[11]).trim(); }).map(function(x){ return {who:x[1]+'-'+x[2]+' '+x[4], q:String(x[11])}; });
@@ -241,4 +247,24 @@ function staff(f){
   var ab = tab_(ABS_SHEET, ABS_HEAD, '#7a2c47'), av = ab.getLastRow()>1 ? ab.getRange(2,1,ab.getLastRow()-1,ABS_HEAD.length).getValues() : [];
   return {ok:true, people:people, preCount:pv.length, safeCount:pv.filter(function(x){return x[5]==='동의';}).length, wants:wants, asks:asks, reflCount:rcount,
           absents: av.map(function(x){ return {who:x[1]+'-'+x[2]+' '+x[4], why:String(x[5]), done:String(x[6])}; })};
+}
+
+
+/* ═════════ 별빛 암호: 참가자 공간에 들어갈 때 쓰는 학생별 숫자 4자리 ═════════
+   처음 들어올 때 정한 암호가 '별빛암호' 탭에 (그대로가 아니라 바꾼 값으로) 저장됨.
+   학생이 암호를 잊으면 그 학생 줄을 지우면 됨 → 다음에 들어올 때 새로 정함 */
+var CODE_SHEET = '별빛암호', CODE_HEAD = ['정한 시각','학년','반','번호','이름','암호(변환값)'];
+function hash_(w, code){
+  var raw = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, 'gocheon-star|'+w.g+'-'+w.b+'-'+w.n+'|'+code, Utilities.Charset.UTF_8);
+  return raw.map(function(b){ return ('0'+(b&255).toString(16)).slice(-2); }).join('');
+}
+/* 맞으면 '' / 처음이면 새로 저장 후 'new' / 틀리면 오류 문구 */
+function checkCode_(w, code, allowSet){
+  code = String(code||'').trim();
+  if(!/^\d{4}$/.test(code)) return '별빛 암호는 숫자 4자리예요.';
+  var t = tab_(CODE_SHEET, CODE_HEAD, '#5b3a9e'), hit = rowOf_(t, CODE_HEAD, w);
+  if(hit){ return String(hit.vals[5])===hash_(w, code) ? '' : '별빛 암호가 맞지 않아요. 잊었다면 담당 선생님께 말해 주세요.'; }
+  if(!allowSet) return '먼저 참가자 공간에 들어가 별빛 암호를 정해 주세요.';
+  t.appendRow([new Date(), w.g, w.b, w.n, w.name, hash_(w, code)]);
+  return 'new';
 }
