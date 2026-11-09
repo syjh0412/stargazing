@@ -22,6 +22,7 @@ var EVENT = {
   GRADES: ['1'],                          // 정식 신청 가능 학년 — 2학년 추가 모집 때 ['1', '2'] 로 바꾸고 '새 버전' 배포
   PRE_GRADES: ['1', '2'],                 // 예비신청은 1·2학년 모두 (추가 모집 인원 가늠용)
   REFLECT_AT: '2026-11-23T20:30:00+09:00', // 관측 일지(소감) 쓰기가 열리는 시각
+  STAFF_PIN: '1234',                      // 선생님 탭 비밀번호
   NOTIFY: true                            // 불참 알림이 오면 이 스크립트 주인(선생님) 메일로 알림
 };
 var SHEET = '신청';
@@ -44,6 +45,7 @@ function doPost(e){
     else if(p.fn==='check') out = check(p.arg||{});
     else if(p.fn==='pre') out = preApply(p.arg||{});
     else if(p.fn==='me') out = me(p.arg||{});
+    else if(p.fn==='staff') out = staff(p.arg||{});
     else if(p.fn==='absent') out = absent(p.arg||{});
     else if(p.fn==='savePre') out = savePre(p.arg||{});
     else if(p.fn==='saveRefl') out = saveRefl(p.arg||{});
@@ -223,4 +225,20 @@ function saveRefl(f){
   upsert_(tab_(REFL_SHEET, REFL_HEAD, '#0f5c4d'), REFL_HEAD, w,
     [clean_(a.seen,80), clean_(a.desc,500), clean_(a.diff,400), clean_(a.learn,600), clean_(a.feel,600), clean_(a.plan,400), clean_(a.tags,80), clean_(a.stars,2)]);
   return {ok:true};
+}
+
+
+/* ═════════ 선생님 탭: 비밀번호가 맞으면 명단·현황을 보여 줌 (보호자 연락처는 보내지 않음) ═════════ */
+function staff(f){
+  if(String(f.pin||'') !== String(EVENT.STAFF_PIN)) return {ok:false, msg:'비밀번호가 맞지 않아요.'};
+  var r = rows_(), people = [];
+  r.forEach(function(x){ var st=String(x[2]); if(st==='확정'||st==='대기'||st==='불참 알림') people.push({no:x[0], st:st, g:String(x[3]), b:String(x[4]), n:String(x[5]), name:String(x[6]), home:String(x[9])}); });
+  people.sort(function(a,b){ return (Number(a.g)-Number(b.g)) || (Number(a.b)-Number(b.b)) || (Number(a.n)-Number(b.n)); });
+  var pre = tab_(PREACT_SHEET, PREACT_HEAD, '#3b2a6e'), pv = pre.getLastRow()>1 ? pre.getRange(2,1,pre.getLastRow()-1,PREACT_HEAD.length).getValues() : [];
+  var asks = pv.filter(function(x){ return String(x[11]).trim(); }).map(function(x){ return {who:x[1]+'-'+x[2]+' '+x[4], q:String(x[11])}; });
+  var wants = {}; pv.forEach(function(x){ var w=String(x[6]); if(w) wants[w]=(wants[w]||0)+1; });
+  var rf = tab_(REFL_SHEET, REFL_HEAD, '#0f5c4d'), rcount = Math.max(0, rf.getLastRow()-1);
+  var ab = tab_(ABS_SHEET, ABS_HEAD, '#7a2c47'), av = ab.getLastRow()>1 ? ab.getRange(2,1,ab.getLastRow()-1,ABS_HEAD.length).getValues() : [];
+  return {ok:true, people:people, preCount:pv.length, safeCount:pv.filter(function(x){return x[5]==='동의';}).length, wants:wants, asks:asks, reflCount:rcount,
+          absents: av.map(function(x){ return {who:x[1]+'-'+x[2]+' '+x[4], why:String(x[5]), done:String(x[6])}; })};
 }

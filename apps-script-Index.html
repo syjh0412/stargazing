@@ -142,7 +142,27 @@ details.abs summary{cursor:pointer;font-weight:700;min-height:44px;display:flex;
 .topnav button{flex:1;min-height:46px;border-radius:12px;border:1px solid var(--line);background:#0b1230cc;color:var(--dim);font:inherit;font-weight:700;font-size:1rem;cursor:pointer}
 .topnav button[aria-selected="true"]{background:#2a2410;border-color:var(--gold);color:var(--gold)}
 body[data-v="crew"] .wrap>*:not(.topnav):not(#crew):not(footer){display:none!important}
-body[data-v="main"] #crew{display:none!important}
+body[data-v="staff"] .wrap>*:not(.topnav):not(#staff):not(footer){display:none!important}
+body[data-v="main"] #crew,body[data-v="main"] #staff,body[data-v="crew"] #staff,body[data-v="staff"] #crew{display:none!important}
+.topnav button{font-size:.92rem}
+table.roster{width:100%;border-collapse:collapse;font-size:.92rem}
+table.roster th,table.roster td{border-bottom:1px solid #26325f;padding:8px 6px;text-align:left}
+table.roster th{color:var(--gold);font-size:.82rem}
+table.roster input{width:20px;height:20px;accent-color:var(--mint)}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.kpi{background:#080d24;border:1px solid #26325f;border-radius:12px;padding:10px;text-align:center}
+.kpi b{display:block;font-size:1.5rem;color:var(--gold);font-family:"Gowun Batang",serif}
+.kpi span{font-size:.78rem;color:var(--dim)}
+.roles{display:grid;gap:8px}
+.role{display:grid;grid-template-columns:7.5em 1fr;gap:10px;background:#080d24;border:1px solid #26325f;border-radius:12px;padding:10px 14px;font-size:.94rem}
+.role b{color:var(--gold)}
+@media (max-width:560px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+#tcel{max-width:380px}
+#tcel h3{font-size:1.45rem;word-break:keep-all}
+.cline{stroke:#ffcf6b;stroke-width:1.6;fill:none;stroke-dasharray:400;stroke-dashoffset:400;animation:draw 2.2s ease forwards}
+.cstar{fill:#fff3cf;opacity:0;animation:twk .5s ease forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+@keyframes twk{to{opacity:1}}
 #crew>h2{margin-top:6px}
 .subnav{display:flex;gap:6px;margin:14px 0 4px;overflow-x:auto}
 .subnav button{flex:1;min-width:96px;min-height:44px;border-radius:999px;border:1px solid #33407a;background:#080d24;color:var(--dim);font:inherit;font-weight:700;font-size:.95rem;cursor:pointer;white-space:nowrap;padding:0 12px}
@@ -190,9 +210,10 @@ footer{margin-top:60px;padding-top:20px;border-top:1px solid var(--line);color:v
 <canvas id="sky" aria-hidden="true"></canvas>
 <div class="wrap">
 
- <nav class="topnav" id="topnav" hidden role="tablist" aria-label="페이지">
-  <button type="button" role="tab" data-v="main" aria-selected="true">🌕 행사 안내·신청</button>
-  <button type="button" role="tab" data-v="crew" aria-selected="false">🔭 참가자 공간</button>
+ <nav class="topnav" id="topnav" role="tablist" aria-label="페이지">
+  <button type="button" role="tab" data-v="main" aria-selected="true">🌕 안내·신청</button>
+  <button type="button" role="tab" data-v="crew" aria-selected="false" id="navCrew">🔭 참가자</button>
+  <button type="button" role="tab" data-v="staff" aria-selected="false">👩‍🏫 선생님</button>
  </nav>
  <header class="hero">
   <svg class="celestial" viewBox="0 0 200 200" aria-hidden="true">
@@ -496,6 +517,102 @@ footer{margin-top:60px;padding-top:20px;border-top:1px solid var(--line);color:v
   </div>
  </section>
 
+ <section id="staff" style="margin-top:16px">
+  <h2>선생님 공간</h2>
+  <p class="lead">천체관측 행사를 함께 지도해 주시는 선생님들을 위한 안내예요.</p>
+  <div class="lookup" id="tLogin">
+   <label for="tPin" class="lb" style="display:block;font-weight:700;margin-bottom:6px">비밀번호</label>
+   <input type="password" id="tPin" inputmode="numeric" maxlength="8" placeholder="비밀번호 4자리" autocomplete="off">
+   <button class="cta" id="tGo" type="button">들어가기</button>
+   <div class="msg" id="tMsg" role="alert"></div>
+  </div>
+
+  <div id="tIn" hidden>
+   <div class="crewcard">
+    <h3>📊 참가 현황 <button class="linkbtn" id="tReload" type="button" style="margin-left:auto">새로고침</button></h3>
+    <div class="kpis" id="tKpi"></div>
+    <p class="sub2" id="tNote" style="margin:10px 0 0"></p>
+   </div>
+
+   <div class="crewcard">
+    <h3>⏰ 시간대별 지도 흐름</h3>
+    <ul class="sched">
+     <li><time>17:40</time><span><b>바우하우스 도착</b> · 난방, 핫팩·간식, 출석부, 구급함 확인</span></li>
+     <li><time>17:50 – 18:00</time><span><b>집합·출석</b> · 방한 복장 점검(외투·모자·장갑), 핫팩 배부, 안전 수칙 한 번 더</span></li>
+     <li><time>18:00 – 19:30</time><span><b>강의 두 차례</b>(18:40~18:50 쉬는 시간) · 화장실은 쉬는 시간에, 이동은 2인 이상</span></li>
+     <li><time>19:30 – 19:40</time><span><b>운동장 이동</b> · 복장 다시 갖추기, 2개 조 편성, 인솔 교사 앞·뒤 배치</span></li>
+     <li><time>19:40 – 20:40</time><span><b>망원경 관측</b> · 조별 교사 1명, 망원경 앞 대기 줄 5명 이내, <b>20:10 추위 확인</b></span></li>
+     <li><time>20:40 – 20:50</time><span><b>정리·귀가</b> · 인원 확인 후 정문에서 보호자 인계, 마지막 학생까지 교사 대기</span></li>
+    </ul>
+   </div>
+
+   <div class="crewcard">
+    <h3>🧑‍🤝‍🧑 역할 나눔</h3>
+    <div class="roles">
+     <div class="role"><b>총괄</b><span>김신연 · 진행, 강사 안내, 날씨 판단(당일 15:00), 비상 연락</span></div>
+     <div class="role"><b>A조 인솔</b><span>○○○ 선생님 · 운동장 망원경 1 (권홍진 선생님, 송양고)</span></div>
+     <div class="role"><b>B조 인솔</b><span>○○○ 선생님 · 운동장 망원경 2 (진영수 선생님, 수리고)</span></div>
+     <div class="role"><b>바우하우스</b><span>○○○ 선생님 · 관측 중 몸 녹이러 오는 학생 맞이, 구급함·담요·핫팩</span></div>
+     <div class="role"><b>정문 귀가</b><span>총괄 + 조 인솔 · 보호자 인계 확인, 혼자 귀가 학생 파악</span></div>
+    </div>
+   </div>
+
+   <div class="crewcard">
+    <h3>🦺 안전 체크</h3>
+    <ol class="rules">
+     <li><b>인원 확인</b>: 18:00, 18:50, 19:40, 20:40 — 아래 명단의 체크칸을 써 주세요.</li>
+     <li><b>이동</b>: 어두운 운동장에서 뛰지 않기, 정해진 길로 조와 함께. 혼자 이동 금지.</li>
+     <li><b>장비</b>: 삼각대 다리·전선 주변에 학생이 몰리지 않게. 망원경은 강사님 허락 후에만.</li>
+     <li><b>불빛</b>: 휴대폰 밝기 낮추기, 사람·망원경 쪽으로 불빛 비추지 않기. 레이저 포인터는 강사님만.</li>
+     <li><b>추위</b>: 심한 떨림, 말이 어눌함, 졸림이 보이면 바로 바우하우스로 옮겨 보온하고 총괄 교사에게 알림. 증상이 계속되면 119.</li>
+     <li><b>귀가</b>: 보호자 인계를 눈으로 확인. 혼자 귀가하는 학생은 집 도착 후 보호자 문자 확인.</li>
+    </ol>
+   </div>
+
+   <div class="crewcard">
+    <h3>🔭 기다리는 학생과 나눌 하늘 이야기</h3>
+    <p class="sub2">망원경 차례를 기다리는 동안 맨눈으로 함께 찾아보세요.</p>
+    <ul class="rules">
+     <li><b>달</b>: 보름 하루 전(98%). 그림자가 짧아 크레이터가 평평해 보이는데, 가장자리를 보면 입체감이 살아 있어요. 학생들의 사전 예측 ③과 연결돼요.</li>
+     <li><b>토성</b>: 저녁 내내 남쪽 하늘 높이(20시 무렵 고도 약 51°). 고리가 지구 쪽으로 약 6°만 기울어 <b>얇은 선</b>처럼 보여요(2025년에 고리가 옆면으로 보였던 뒤 다시 열리는 중).</li>
+     <li><b>이중성·성단</b>: 강사님이 달빛 속에서도 잘 보이는 밝은 대상(예: 백조자리 알비레오, 플레이아데스 성단)을 고르실 예정이에요.</li>
+     <li><b>맨눈 별자리</b>: 머리 위 페가수스 사각형, 북쪽의 W 모양 카시오페이아, 동쪽에 떠오르는 플레이아데스(좀생이별). 달이 밝아 어두운 별은 잘 안 보여요.</li>
+    </ul>
+   </div>
+
+   <div class="crewcard">
+    <h3>📝 학생 활동 안내</h3>
+    <ul class="rules">
+     <li><b>사전 활동</b>(참가자 공간): 안전 약속 읽기, 관측 전 미션(가장 보고 싶은 것, 예측 3문항, 강사님께 질문).</li>
+     <li><b>사후 활동</b>(11/23 20:30부터): 「천문학자의 관측 일지」 — 관측 기록, 예측 확인, 배운 점·느낀 점·실천할 점. 생활기록부 기록 자료로 써요.</li>
+     <li>행사 끝에 학생들에게 "오늘 밤 안에 관측 일지 쓰기"를 한 번 더 말씀해 주세요.</li>
+    </ul>
+   </div>
+
+   <div class="crewcard" id="tWantBox" hidden>
+    <h3>✨ 학생들이 가장 보고 싶어 하는 것</h3>
+    <div class="kpis" id="tWant"></div>
+   </div>
+
+   <div class="crewcard" id="tAskBox" hidden>
+    <h3>🙋 강사님께 드릴 학생 질문</h3>
+    <ul class="rules" id="tAsk"></ul>
+   </div>
+
+   <div class="crewcard" id="tAbsBox" hidden style="border-color:#5a2c47">
+    <h3>🚫 불참 알림</h3>
+    <ul class="rules" id="tAbs"></ul>
+   </div>
+
+   <div class="crewcard">
+    <h3>📋 참가자 명단 · 출석 체크</h3>
+    <p class="sub2">체크는 이 기기에만 저장돼요. 보호자 연락처는 담당 교사에게 문의해 주세요.</p>
+    <div style="overflow-x:auto"><table class="roster"><thead><tr><th>출석</th><th>학년-반-번호</th><th>이름</th><th>상태</th><th>귀가</th></tr></thead><tbody id="tRoster"><tr><td colspan="5" style="color:var(--dim)">불러오는 중…</td></tr></tbody></table></div>
+    <button class="linkbtn" id="tClear" type="button">출석 체크 모두 지우기</button>
+   </div>
+  </div>
+ </section>
+
  <footer>고천중학교 과학과 · 담당 김신연 · ☎ 031-458-8624<br>신청을 취소하려면 담당 선생님께 알려 주세요. 대기 순서대로 연락드립니다.</footer>
 </div>
 
@@ -522,6 +639,7 @@ function run(fn,arg){return new Promise((ok,no)=>{
   if(PREVIEW){setTimeout(()=>{
     if(fn==='status'){const cr=location.hash.indexOf('crew')>=0;ok({now:Date.now(),openAt:Date.now()+((location.hash==='#open'||cr)?-1000:3*864e5),pre:fake.pre||7,closeAt:Date.now()+864e5,cap:30,wait:5,conf:cr?30:fake.conf,waiting:cr?(location.hash.indexOf('full')>=0?5:1):fake.waiting,full:cr&&location.hash.indexOf('full')>=0});}
     else if(fn==='me'){ok(arg.name?{ok:true,name:arg.name,no:7,absent:false,pre:null,refl:null,reflectAt:location.hash.indexOf('after')>=0?0:Date.now()+864e5}:{ok:false,msg:'못 찾음'});}
+    else if(fn==='staff'){ok(arg.pin==='1234'?{ok:true,people:[{no:1,st:'확정',g:'1',b:'2',n:'5',name:'김하늘',home:'보호자 동행'},{no:2,st:'확정',g:'1',b:'3',n:'12',name:'이별',home:'단독 귀가(보호자 동의)'},{no:31,st:'대기',g:'1',b:'4',n:'2',name:'박달',home:'보호자 동행'}],preCount:12,safeCount:11,wants:{'토성':7,'달':3,'성단':2},asks:[{who:'1-2 김하늘',q:'토성 고리는 왜 생겼나요?'}],reflCount:0,absents:[]}:{ok:false,msg:'비밀번호가 맞지 않아요.'});}
     else if(fn==='savePre'||fn==='saveRefl'||fn==='absent'){ok({ok:true});}
     else if(fn==='pre'){fake.pre=(fake.pre||7)+1;ok({ok:true,count:fake.pre});}
     else if(fn==='apply'){let st=fake.conf<25?'확정':'대기';st==='확정'?fake.conf++:fake.waiting++;ok({ok:true,no:fake.conf+fake.waiting,status:st,rank:st==='확정'?fake.conf:fake.waiting,name:arg.name});}
@@ -552,7 +670,7 @@ function paint(){
   /* 정원이 차면 참가자 공간을 열고, 마감 전이고 대기 자리가 남았으면 대기 신청 칸도 함께 보여 줌 */
   const crewOn=!preOn&&(ST.conf>=ST.cap||ST.full||now>ST.closeAt);
   const waitOpen=crewOn&&!ST.full&&now<=ST.closeAt; $('#toWait').hidden=!waitOpen;
-  $('#crew').hidden=!crewOn; $('#topnav').hidden=!crewOn; if(!crewOn&&document.body.dataset.v==='crew')setView('main'); $('#apply').hidden=crewOn&&!waitOpen; $('#lk').closest('section').hidden=crewOn&&!waitOpen;
+  $('#crew').hidden=!crewOn; $('#navCrew').hidden=!crewOn; if(!crewOn&&document.body.dataset.v==='crew')setView('main'); $('#apply').hidden=crewOn&&!waitOpen; $('#lk').closest('section').hidden=crewOn&&!waitOpen;
   if(waitOpen){$('#applyLead').innerHTML='정원 30명이 모두 찼어요. 지금은 <b>대기 신청</b>만 받아요(5명, 11월 10일(화) 오후 6시까지). 참가자 중 빈자리가 생기면 <b>대기 순서대로 담당 선생님이 연락</b>드려요.';
     btn.disabled=false;btn.textContent='대기로 신청하기';}
   if(crewOn&&waitOpen){$('#seatLb').textContent='참가 확정';$('#dots').style.display='none';$('#waitTxt').style.display='';
@@ -579,6 +697,47 @@ document.querySelectorAll('#topnav button').forEach(b=>b.onclick=()=>setView(b.d
 function setSub(k){document.querySelectorAll('.subnav button').forEach(b=>b.setAttribute('aria-selected',b.dataset.sub===k));document.querySelectorAll('[data-pane]').forEach(p=>p.hidden=p.dataset.pane!==k);}
 document.querySelectorAll('.subnav button').forEach(b=>b.onclick=()=>setSub(b.dataset.sub));
 document.body.dataset.v='main';
+/* ── 선생님 공간 ── */
+let TPIN='';
+function teacherCelebrate(){
+  const o=document.createElement('div');o.id='cel';o.setAttribute('role','dialog');o.setAttribute('aria-label','감사 인사');
+  const pts=[[40,150],[90,110],[150,128],[205,86],[262,104],[318,60],[290,150],[230,175]];
+  const lines=[[0,1],[1,2],[2,3],[3,4],[4,5],[4,6],[6,7],[7,2]];
+  o.innerHTML='<div class="bx" id="tcel"><svg viewBox="0 0 360 200" width="300" height="166" aria-hidden="true">'+lines.map((l,i)=>'<line class="cline" style="animation-delay:'+(0.2+i*0.18)+'s" x1="'+pts[l[0]][0]+'" y1="'+pts[l[0]][1]+'" x2="'+pts[l[1]][0]+'" y2="'+pts[l[1]][1]+'"/>').join('')+pts.map((p,i)=>'<circle class="cstar" style="animation-delay:'+(i*0.15)+'s" cx="'+p[0]+'" cy="'+p[1]+'" r="'+(i===3||i===5?5:3.5)+'"/>').join('')+'</svg>'
+   +'<h3>함께해 주셔서 감사합니다</h3><p>선생님 덕분에 아이들의 첫 망원경 밤이<br>별자리처럼 이어집니다.<br><span style="color:var(--gold);font-weight:700">11월 23일, 운동장에서 만나요 🌙</span></p><div class="tap">화면을 누르면 닫혀요</div></div>';
+  document.body.appendChild(o); requestAnimationFrame(()=>o.classList.add('on'));
+  if(!matchMedia('(prefers-reduced-motion: reduce)').matches){
+    const em=['🌟','✨','⭐','🌙','💫','🪐'];
+    for(let i=0;i<28;i++){const e=document.createElement('span');e.className='fx';e.textContent=em[i%em.length];e.style.left=Math.random()*100+'%';e.style.fontSize=(14+Math.random()*16)+'px';e.style.animationDuration=(3.2+Math.random()*2.4)+'s';e.style.animationDelay=(1+Math.random()*1.5)+'s';e.style.setProperty('--r',(Math.random()*360-180)+'deg');o.appendChild(e);}
+    for(let i=0;i<4;i++){const t=document.createElement('i');t.className='shoot';t.style.left=(55+Math.random()*45)+'%';t.style.top=(Math.random()*35)+'%';t.style.animationDelay=(0.6+i*0.8)+'s';o.appendChild(t);}
+  }
+  const close=()=>{o.classList.remove('on');setTimeout(()=>o.remove(),400);}; o.onclick=close; setTimeout(close,7000);
+}
+const TL={get(){try{return JSON.parse(localStorage.getItem('sg_att')||'{}')}catch(e){return {}}},set(v){try{localStorage.setItem('sg_att',JSON.stringify(v))}catch(e){}}};
+function renderStaff(d){
+  const conf=d.people.filter(x=>x.st==='확정'), wait=d.people.filter(x=>x.st==='대기'), abs=d.people.filter(x=>x.st==='불참 알림');
+  $('#tKpi').innerHTML=[[conf.length,'참가 확정'],[wait.length,'대기'],[d.preCount,'사전 활동 완료'],[d.reflCount,'관측 일지 완료']].map(k=>'<div class="kpi"><b>'+k[0]+'</b><span>'+k[1]+'</span></div>').join('');
+  $('#tNote').textContent='안전 약속 동의 '+d.safeCount+'명 · 불참 알림 '+abs.length+'명';
+  const wk=Object.keys(d.wants||{}); $('#tWantBox').hidden=!wk.length; $('#tWant').innerHTML=wk.sort((a,b)=>d.wants[b]-d.wants[a]).map(k=>'<div class="kpi"><b>'+d.wants[k]+'</b><span>'+esc(k)+'</span></div>').join('');
+  $('#tAskBox').hidden=!d.asks.length; $('#tAsk').innerHTML=d.asks.map(a=>'<li>'+esc(a.q)+' <span style="color:var(--faint)">— '+esc(a.who)+'</span></li>').join('');
+  $('#tAbsBox').hidden=!d.absents.length; $('#tAbs').innerHTML=d.absents.map(a=>'<li><b>'+esc(a.who)+'</b> · '+esc(a.why)+(a.done?' <span class="tag mint">'+esc(a.done)+'</span>':'')+'</li>').join('');
+  const att=TL.get();
+  $('#tRoster').innerHTML=d.people.map(x=>{const k=x.g+'-'+x.b+'-'+x.n;return '<tr'+(x.st!=='확정'?' style="color:var(--faint)"':'')+'><td><input type="checkbox" data-k="'+k+'" aria-label="'+esc(x.name)+' 출석"'+(att[k]?' checked':'')+'></td><td>'+k+'</td><td>'+esc(x.name)+'</td><td>'+esc(x.st)+'</td><td>'+(String(x.home).indexOf('단독')>=0?'혼자':'보호자')+'</td></tr>';}).join('')||'<tr><td colspan="5">명단이 없어요.</td></tr>';
+  document.querySelectorAll('#tRoster input').forEach(c=>c.onchange=()=>{const a=TL.get();a[c.dataset.k]=c.checked;TL.set(a);});
+}
+async function staffLoad(pin,first){
+  const m=$('#tMsg'); m.className='msg';
+  try{const d=await run('staff',{pin}); if(!d.ok){m.textContent=d.msg||'비밀번호가 맞지 않아요.';m.className='msg err';return false;}
+    TPIN=pin; try{sessionStorage.setItem('sg_pin',pin);}catch(e){} $('#tLogin').hidden=true;$('#tIn').hidden=false; renderStaff(d); if(first)teacherCelebrate(); return true;
+  }catch(e){
+    if(pin==='1234'){TPIN=pin;$('#tLogin').hidden=true;$('#tIn').hidden=false;$('#tKpi').innerHTML='';$('#tNote').textContent='명단을 불러오지 못했어요. (Apps Script를 새 버전으로 배포하면 보여요)';$('#tRoster').innerHTML='<tr><td colspan="5" style="color:var(--dim)">명단을 불러오지 못했어요.</td></tr>';if(first)teacherCelebrate();return true;}
+    m.textContent='연결이 원활하지 않아요. 다시 눌러 주세요.';m.className='msg err';return false;}
+}
+$('#tGo').onclick=()=>{const p=$('#tPin').value.trim(); if(!p)return; const b=$('#tGo');b.disabled=true;staffLoad(p,true).finally(()=>b.disabled=false);};
+$('#tPin').addEventListener('keydown',e=>{if(e.key==='Enter')$('#tGo').click();});
+$('#tReload').onclick=()=>TPIN&&staffLoad(TPIN,false);
+$('#tClear').onclick=()=>{TL.set({});document.querySelectorAll('#tRoster input').forEach(c=>c.checked=false);};
+{let sp='';try{sp=sessionStorage.getItem('sg_pin')||'';}catch(e){} if(sp)staffLoad(sp,false);}
 $('#toWait').onclick=()=>$('#apply').scrollIntoView({behavior:'smooth',block:'start'});
 /* ── 참가자 공간 ── */
 let ME=null, MEINFO=null;
