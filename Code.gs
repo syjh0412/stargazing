@@ -151,11 +151,15 @@ function check(f){
    학생이 불참을 알리면 상태가 '불참 알림'으로 바뀌고 '불참알림' 탭에 기록, 선생님 메일로 알림 */
 var ABS_SHEET = '불참알림', ABS_HEAD = ['알린시각','학년','반','번호','이름','사유','처리'];
 var PREACT_SHEET = '사전활동', PREACT_HEAD = ['저장시각','학년','반','번호','이름','안전약속','가장 보고 싶은 것','이유','예측1 달 모양','예측2 토성 고리','예측3 크레이터','강사님께 질문'];
-var REFL_SHEET = '관측일지', REFL_HEAD = ['저장시각','학년','반','번호','이름','실제로 본 것','기억에 남는 장면','예상과 달랐던 점','새로 알게 된 점','더 궁금해진 점','한 줄 소감','별점'];
+var REFL_SHEET = '관측일지', REFL_HEAD = ['저장시각','학년','반','번호','이름','본 것','관측 기록(어떻게 보였나)','예측과 실제','배운 점','느낀 점','실천할 점(관측 계획)','해시태그','별점'];
 
 function tab_(name, head, color){
   var ss = SpreadsheetApp.getActiveSpreadsheet(), t = ss.getSheetByName(name);
-  if(!t){ t = ss.insertSheet(name); t.appendRow(head); t.setFrozenRows(1); t.getRange(1,1,1,head.length).setFontWeight('bold').setBackground(color||'#1f2a55').setFontColor('#ffffff'); }
+  if(!t){ t = ss.insertSheet(name); t.appendRow(head); t.setFrozenRows(1); }
+  /* 항목이 바뀌었으면 머리글만 새로 맞춤 */
+  var cur = t.getRange(1,1,1,head.length).getValues()[0];
+  if(cur.join('|') !== head.join('|')) t.getRange(1,1,1,head.length).setValues([head]);
+  t.getRange(1,1,1,head.length).setFontWeight('bold').setBackground(color||'#1f2a55').setFontColor('#ffffff');
   return t;
 }
 function who_(f){ return {g:clean_(f.grade,2), b:clean_(f.cls,3), n:clean_(f.num,3), name:clean_(f.name,20)}; }
@@ -217,6 +221,6 @@ function saveRefl(f){
   if(new Date() < new Date(EVENT.REFLECT_AT)) return {ok:false, msg:'관측 일지는 관측이 끝난 뒤(11/23 20:30)부터 쓸 수 있어요.'};
   var a = f.a || {};
   upsert_(tab_(REFL_SHEET, REFL_HEAD, '#0f5c4d'), REFL_HEAD, w,
-    [clean_(a.seen,80), clean_(a.best,400), clean_(a.diff,400), clean_(a.learn,400), clean_(a.wonder,400), clean_(a.line,120), clean_(a.stars,2)]);
+    [clean_(a.seen,80), clean_(a.desc,500), clean_(a.diff,400), clean_(a.learn,600), clean_(a.feel,600), clean_(a.plan,400), clean_(a.tags,80), clean_(a.stars,2)]);
   return {ok:true};
 }

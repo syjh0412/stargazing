@@ -136,6 +136,22 @@ textarea:focus{outline:2px solid var(--gold);outline-offset:1px;border-color:tra
 .cmp div{background:#080d24;border:1px solid #26325f;border-radius:12px;padding:10px 14px;font-size:.94rem}
 .cmp b{color:var(--gold)}
 details.abs summary{cursor:pointer;font-weight:700;min-height:44px;display:flex;align-items:center;color:#ffd1dc}
+[hidden]{display:none!important}
+/* 상단 탭 */
+.topnav{position:sticky;top:0;z-index:20;display:flex;gap:6px;padding:10px 0;background:linear-gradient(#050816,#050816e6 70%,#05081600)}
+.topnav button{flex:1;min-height:46px;border-radius:12px;border:1px solid var(--line);background:#0b1230cc;color:var(--dim);font:inherit;font-weight:700;font-size:1rem;cursor:pointer}
+.topnav button[aria-selected="true"]{background:#2a2410;border-color:var(--gold);color:var(--gold)}
+body[data-v="crew"] .wrap>*:not(.topnav):not(#crew):not(footer){display:none!important}
+body[data-v="main"] #crew{display:none!important}
+#crew>h2{margin-top:6px}
+.subnav{display:flex;gap:6px;margin:14px 0 4px;overflow-x:auto}
+.subnav button{flex:1;min-width:96px;min-height:44px;border-radius:999px;border:1px solid #33407a;background:#080d24;color:var(--dim);font:inherit;font-weight:700;font-size:.95rem;cursor:pointer;white-space:nowrap;padding:0 12px}
+.subnav button[aria-selected="true"]{background:var(--gold);border-color:var(--gold);color:#1b1300}
+.obj{display:grid;grid-template-columns:auto 1fr;gap:8px 10px;align-items:center}
+.obj label{display:flex;align-items:center;gap:8px;font-weight:700;min-height:44px;white-space:nowrap}
+.obj input[type=checkbox]{width:20px;height:20px;accent-color:var(--gold)}
+.obj input[type=text]{min-height:44px;font-size:.95rem}
+.prompt{font-size:.88rem;color:var(--faint);margin:-4px 0 8px}
 /* 축하 화면 */
 #cel{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 45%,#1b245999,#050816e6);backdrop-filter:blur(3px);opacity:0;transition:opacity .35s;overflow:hidden;cursor:pointer}
 #cel.on{opacity:1}
@@ -174,6 +190,10 @@ footer{margin-top:60px;padding-top:20px;border-top:1px solid var(--line);color:v
 <canvas id="sky" aria-hidden="true"></canvas>
 <div class="wrap">
 
+ <nav class="topnav" id="topnav" hidden role="tablist" aria-label="페이지">
+  <button type="button" role="tab" data-v="main" aria-selected="true">🌕 행사 안내·신청</button>
+  <button type="button" role="tab" data-v="crew" aria-selected="false">🔭 참가자 공간</button>
+ </nav>
  <header class="hero">
   <svg class="celestial" viewBox="0 0 200 200" aria-hidden="true">
    <defs>
@@ -219,7 +239,7 @@ footer{margin-top:60px;padding-top:20px;border-top:1px solid var(--line);color:v
   </div>
  </header>
 
- <section id="crew" hidden>
+ <section id="crew" hidden style="margin-top:16px">
   <h2>참가자 공간</h2>
   <p class="lead">신청할 때 적은 학년·반·번호·이름으로 들어오세요. 일정과 안전 약속을 확인하고, 관측 전 미션과 관측 일지를 여기서 써요.</p>
   <div class="lookup" id="cLogin">
@@ -236,101 +256,133 @@ footer{margin-top:60px;padding-top:20px;border-top:1px solid var(--line);color:v
   <div id="cIn" hidden>
    <div class="hello"><div><span class="tag mint" id="cTag">참가 확정</span><br><b id="cName"></b> 학생, 반가워요!</div><button class="linkbtn" id="cOut" type="button">다른 학생으로 들어가기</button></div>
 
-   <div class="crewcard">
-    <h3>📅 꼭 기억할 일정</h3>
-    <ul class="sched">
-     <li><time>11. 20.(금) 15:30</time><span><b>사전 안전교육</b> · 바우하우스 <span class="tag">필수</span></span></li>
-     <li><time>11. 23.(월) 16:00</time><span>날씨에 따라 진행 여부를 보호자 연락처로 문자 안내</span></li>
-     <li><time>11. 23.(월) 17:50</time><span><b>바우하우스 집합</b> · 한겨울 복장으로</span></li>
-     <li><time>18:00 – 19:30</time><span>강의 「오늘의 밤하늘」 · 「별과 우주」</span></li>
-     <li><time>19:40 – 20:40</time><span>운동장 망원경 관측</span></li>
-     <li><time>20:40</time><span><b>정문에서 보호자와 함께 귀가</b></span></li>
-    </ul>
+   <div class="subnav" role="tablist" aria-label="참가자 공간">
+    <button type="button" role="tab" data-sub="info" aria-selected="true">📅 일정</button>
+    <button type="button" role="tab" data-sub="pre" aria-selected="false">✨ 사전 활동</button>
+    <button type="button" role="tab" data-sub="post" aria-selected="false">📝 사후 활동</button>
    </div>
 
-   <div class="crewcard">
-    <h3>🦺 안전 약속</h3>
-    <p class="sub2">11월 20일 안전교육에서 다시 이야기할 내용이에요. 미리 읽어 두세요.</p>
-    <ol class="rules">
-     <li><b>한겨울 복장</b>: 두꺼운 외투, 모자, 목도리, 장갑, 두꺼운 양말. 밤에는 0℃ 가까이 내려가요.</li>
-     <li><b>어두운 운동장에서는 걷기</b>: 뛰지 않고, 정해진 길로 조와 함께 움직여요.</li>
-     <li><b>혼자 떨어지지 않기</b>: 화장실이나 실내에 갈 때는 선생님께 말하고 친구와 함께 가요.</li>
-     <li><b>장비 조심</b>: 망원경 삼각대 다리와 전선에 걸리지 않게, 망원경을 밀거나 기대지 않아요. 강사님 허락 없이 만지지 않아요.</li>
-     <li><b>불빛 예절</b>: 휴대폰 화면 밝기를 낮추고, 불빛을 하늘·망원경·친구 얼굴 쪽으로 비추지 않아요. 레이저 포인터는 강사님만 써요.</li>
-     <li><b>추우면 바로 말하기</b>: 몸이 떨리거나 손발 감각이 둔해지면 참지 말고 선생님께 알려요.</li>
-    </ol>
-    <label class="chk"><input type="checkbox" id="aSafety"> 안전 약속을 읽었고, 꼭 지킬게요</label>
-   </div>
-
-   <div class="crewcard">
-    <h3>✨ 관측 전 미션 <span class="tag">5분</span></h3>
-    <p class="sub2">관측 날 직접 확인할 거예요. 정답을 몰라도 괜찮아요. 내 생각을 골라 보세요!</p>
-
-    <div class="qn">미션 1. 그날 밤 가장 보고 싶은 것은?</div>
-    <div class="seg col" id="aWant">
-     <label><input type="radio" name="want" value="달">🌕 달</label>
-     <label><input type="radio" name="want" value="토성">🪐 토성</label>
-     <label><input type="radio" name="want" value="이중성">✨ 이중성</label>
-     <label><input type="radio" name="want" value="성단">🌌 성단</label>
-     <label><input type="radio" name="want" value="별자리">⭐ 별자리</label>
+   <div data-pane="info">
+    <div class="crewcard">
+     <h3>📅 꼭 기억할 일정</h3>
+     <ul class="sched">
+      <li><time>11. 20.(금) 15:30</time><span><b>사전 안전교육</b> · 바우하우스 <span class="tag">필수</span></span></li>
+      <li><time>11. 23.(월) 16:00</time><span>날씨에 따라 진행 여부를 보호자 연락처로 문자 안내</span></li>
+      <li><time>11. 23.(월) 17:50</time><span><b>바우하우스 집합</b> · 한겨울 복장으로</span></li>
+      <li><time>18:00 – 18:40</time><span>강의 ① 오늘의 밤하늘</span></li>
+      <li><time>18:50 – 19:30</time><span>강의 ② 별과 우주</span></li>
+      <li><time>19:40 – 20:40</time><span>운동장 망원경 관측</span></li>
+      <li><time>20:40</time><span><b>정문에서 보호자와 함께 귀가</b></span></li>
+     </ul>
     </div>
-    <input type="text" id="aWhy" maxlength="100" placeholder="왜 그게 가장 보고 싶나요? (한 줄)" style="margin-top:8px" aria-label="보고 싶은 이유">
-
-    <div class="qn">미션 2. 예측해 보기 ① 11월 23일 밤, 달은 어떤 모양일까?<small>힌트: 그날은 음력으로 며칠일까요?</small></div>
-    <div class="seg col"><label><input type="radio" name="q1" value="초승달">초승달</label><label><input type="radio" name="q1" value="반달">반달</label><label><input type="radio" name="q1" value="거의 보름달">거의 보름달</label></div>
-
-    <div class="qn">예측 ② 망원경으로 본 토성의 고리는 어떻게 보일까?</div>
-    <div class="seg col"><label><input type="radio" name="q2" value="넓게 활짝">넓게 활짝</label><label><input type="radio" name="q2" value="얇은 선처럼">얇은 선처럼</label><label><input type="radio" name="q2" value="안 보인다">안 보인다</label></div>
-
-    <div class="qn">예측 ③ 달의 크레이터가 가장 울퉁불퉁 입체적으로 보이는 때는?</div>
-    <div class="seg col"><label><input type="radio" name="q3" value="보름달일 때">보름달일 때</label><label><input type="radio" name="q3" value="반달일 때">반달일 때</label><label><input type="radio" name="q3" value="언제나 같다">언제나 같다</label></div>
-
-    <div class="qn">미션 3. 강사님께 묻고 싶은 질문 하나</div>
-    <input type="text" id="aAsk" maxlength="150" placeholder="예) 토성 고리는 왜 생겼나요?" aria-label="강사님께 질문">
-
-    <div class="qn" style="margin-top:20px">🔭 보너스: 그날 밤 하늘 미리 보기</div>
-    <a class="btn2" style="display:flex;align-items:center;justify-content:center;text-decoration:none;margin-top:0" href="https://stellarium-web.org/?date=2026-11-23T11:30:00Z&amp;lat=37.36&amp;lng=126.97&amp;elev=40&amp;fov=120" target="_blank" rel="noopener">11월 23일 저녁 8시 30분 고천중 하늘 열어 보기</a>
-
-    <button class="cta" id="aSave" type="button">미션 저장하기</button>
-    <div class="saved" id="aSaved" aria-live="polite"></div>
+    <div class="crewcard">
+     <h3>🧭 해야 할 일</h3>
+     <ul class="sched">
+      <li><time>관측 전</time><span><b>사전 활동</b>: 안전 약속 읽기 + 미션 3개 (5분)</span></li>
+      <li><time>관측 후</time><span><b>사후 활동</b>: 천문학자의 관측 일지 쓰기 (11/23 20:30부터)</span></li>
+     </ul>
+    </div>
+    <div class="crewcard" style="border-color:#5a2c47">
+     <details class="abs" id="absBox">
+      <summary>🙋 사정이 생겨 참여하지 못하게 됐나요?</summary>
+      <p class="sub2" style="margin-top:4px">선생님께 꼭 알려 주세요. 기다리는 친구들이 있어요. 보호자와 먼저 이야기한 뒤 알려 주세요.</p>
+      <textarea id="absWhy" maxlength="200" placeholder="못 오는 까닭을 짧게 적어요. 예) 가족 일정이 생겼어요."></textarea>
+      <button class="btn2" id="absGo" type="button" style="border-color:#ff9db0;color:#ffd1dc">참여하지 못한다고 선생님께 알리기</button>
+      <div class="msg" id="absMsg" role="alert"></div>
+     </details>
+     <div id="absDone" hidden><b style="color:#ffd1dc">선생님께 불참을 알렸어요.</b><p class="sub2" style="margin:4px 0 0">다시 참여할 수 있게 되면 담당 선생님께 직접 말해 주세요.</p></div>
+    </div>
    </div>
 
-   <div class="crewcard">
-    <h3>📝 관측 일지</h3>
-    <p class="sub2">관측이 끝난 뒤 그날 밤을 떠올리며 써요. 생활기록부 기록에 쓰이니 내 말로 구체적으로 적어 주세요.</p>
-    <div class="lock" id="rLock"><span style="font-size:1.6rem">🔒</span><span>11월 23일 관측이 끝난 뒤(저녁 8시 30분)부터 쓸 수 있어요.</span></div>
-    <div id="rForm" hidden>
-     <div class="qn" style="margin-top:4px">1. 실제로 본 것을 모두 골라요</div>
-     <div class="seg col" id="rSeen">
-      <label><input type="checkbox" value="달">달</label><label><input type="checkbox" value="토성">토성</label><label><input type="checkbox" value="이중성">이중성</label><label><input type="checkbox" value="성단">성단</label><label><input type="checkbox" value="별자리">별자리</label>
+   <div data-pane="pre" hidden>
+    <div class="crewcard">
+     <h3>🦺 사전 활동 1. 안전 약속</h3>
+     <p class="sub2">11월 20일 안전교육에서 다시 이야기할 내용이에요. 미리 읽어 두세요.</p>
+     <ol class="rules">
+      <li><b>한겨울 복장</b>: 두꺼운 외투, 모자, 목도리, 장갑, 두꺼운 양말. 밤에는 0℃ 가까이 내려가요.</li>
+      <li><b>어두운 운동장에서는 걷기</b>: 뛰지 않고, 정해진 길로 조와 함께 움직여요.</li>
+      <li><b>혼자 떨어지지 않기</b>: 화장실이나 실내에 갈 때는 선생님께 말하고 친구와 함께 가요.</li>
+      <li><b>장비 조심</b>: 망원경 삼각대 다리와 전선에 걸리지 않게, 망원경을 밀거나 기대지 않아요. 강사님 허락 없이 만지지 않아요.</li>
+      <li><b>불빛 예절</b>: 휴대폰 화면 밝기를 낮추고, 불빛을 하늘·망원경·친구 얼굴 쪽으로 비추지 않아요. 레이저 포인터는 강사님만 써요.</li>
+      <li><b>추우면 바로 말하기</b>: 몸이 떨리거나 손발 감각이 둔해지면 참지 말고 선생님께 알려요.</li>
+     </ol>
+     <label class="chk"><input type="checkbox" id="aSafety"> 안전 약속을 읽었고, 꼭 지킬게요</label>
+    </div>
+
+    <div class="crewcard">
+     <h3>✨ 사전 활동 2. 관측 전 미션 <span class="tag">5분</span></h3>
+     <p class="sub2">관측 날 직접 확인할 거예요. 정답을 몰라도 괜찮아요. 내 생각을 골라 보세요!</p>
+
+     <div class="qn">미션 1. 그날 밤 가장 보고 싶은 것은?</div>
+     <div class="seg col" id="aWant">
+      <label><input type="radio" name="want" value="달">🌕 달</label>
+      <label><input type="radio" name="want" value="토성">🪐 토성</label>
+      <label><input type="radio" name="want" value="이중성">✨ 이중성</label>
+      <label><input type="radio" name="want" value="성단">🌌 성단</label>
+      <label><input type="radio" name="want" value="별자리">⭐ 별자리</label>
      </div>
-     <div class="qn">2. 내 예측은 맞았을까?</div>
-     <div class="cmp" id="rCmp"></div>
-     <textarea id="rDiff" placeholder="예상과 같았던 점이나 달랐던 점을 적어요."></textarea>
-     <div class="qn">3. 가장 기억에 남는 장면과 그 까닭</div>
-     <textarea id="rBest" placeholder="무엇을 보았고, 어떻게 보였는지, 왜 기억에 남는지 적어요."></textarea>
-     <div class="qn">4. 새롭게 알게 된 점<small>강의나 관측에서 배운 것</small></div>
-     <textarea id="rLearn"></textarea>
-     <div class="qn">5. 더 궁금해진 점</div>
-     <textarea id="rWonder" style="min-height:70px"></textarea>
-     <div class="qn">6. 오늘 밤을 한 줄로</div>
-     <input type="text" id="rLine" maxlength="80" placeholder="한 줄 소감">
-     <div class="qn">7. 오늘 관측, 별 몇 개?</div>
-     <div class="seg" id="rStars"><label><input type="radio" name="stars" value="1">★</label><label><input type="radio" name="stars" value="2">★★</label><label><input type="radio" name="stars" value="3">★★★</label><label><input type="radio" name="stars" value="4">★★★★</label><label><input type="radio" name="stars" value="5">★★★★★</label></div>
-     <button class="cta" id="rSave" type="button">관측 일지 저장하기</button>
-     <div class="saved" id="rSaved" aria-live="polite"></div>
+     <input type="text" id="aWhy" maxlength="100" placeholder="왜 그게 가장 보고 싶나요? (한 줄)" style="margin-top:8px" aria-label="보고 싶은 이유">
+
+     <div class="qn">미션 2. 예측해 보기 ① 11월 23일 밤, 달은 어떤 모양일까?<small>힌트: 그날은 음력으로 며칠일까요?</small></div>
+     <div class="seg col"><label><input type="radio" name="q1" value="초승달">초승달</label><label><input type="radio" name="q1" value="반달">반달</label><label><input type="radio" name="q1" value="거의 보름달">거의 보름달</label></div>
+
+     <div class="qn">예측 ② 망원경으로 본 토성의 고리는 어떻게 보일까?</div>
+     <div class="seg col"><label><input type="radio" name="q2" value="넓게 활짝">넓게 활짝</label><label><input type="radio" name="q2" value="얇은 선처럼">얇은 선처럼</label><label><input type="radio" name="q2" value="안 보인다">안 보인다</label></div>
+
+     <div class="qn">예측 ③ 달의 크레이터가 가장 울퉁불퉁 입체적으로 보이는 때는?</div>
+     <div class="seg col"><label><input type="radio" name="q3" value="보름달일 때">보름달일 때</label><label><input type="radio" name="q3" value="반달일 때">반달일 때</label><label><input type="radio" name="q3" value="언제나 같다">언제나 같다</label></div>
+
+     <div class="qn">미션 3. 강사님께 묻고 싶은 질문 하나</div>
+     <input type="text" id="aAsk" maxlength="150" placeholder="예) 토성 고리는 왜 생겼나요?" aria-label="강사님께 질문">
+
+     <div class="qn" style="margin-top:20px">🔭 보너스: 그날 밤 하늘 미리 보기</div>
+     <a class="btn2" style="display:flex;align-items:center;justify-content:center;text-decoration:none;margin-top:0" href="https://stellarium-web.org/?date=2026-11-23T11:30:00Z&amp;lat=37.36&amp;lng=126.97&amp;elev=40&amp;fov=120" target="_blank" rel="noopener">11월 23일 저녁 8시 30분 고천중 하늘 열어 보기</a>
+
+     <button class="cta" id="aSave" type="button">사전 활동 저장하기</button>
+     <div class="saved" id="aSaved" aria-live="polite"></div>
     </div>
    </div>
 
-   <div class="crewcard" style="border-color:#5a2c47">
-    <details class="abs" id="absBox">
-     <summary>🙋 사정이 생겨 참여하지 못하게 됐나요?</summary>
-     <p class="sub2" style="margin-top:4px">선생님께 꼭 알려 주세요. 기다리는 친구들이 있어요. 보호자와 먼저 이야기한 뒤 알려 주세요.</p>
-     <textarea id="absWhy" maxlength="200" placeholder="못 오는 까닭을 짧게 적어요. 예) 가족 일정이 생겼어요."></textarea>
-     <button class="btn2" id="absGo" type="button" style="border-color:#ff9db0;color:#ffd1dc">참여하지 못한다고 선생님께 알리기</button>
-     <div class="msg" id="absMsg" role="alert"></div>
-    </details>
-    <div id="absDone" hidden><b style="color:#ffd1dc">선생님께 불참을 알렸어요.</b><p class="sub2" style="margin:4px 0 0">다시 참여할 수 있게 되면 담당 선생님께 직접 말해 주세요.</p></div>
+   <div data-pane="post" hidden>
+    <div class="crewcard">
+     <h3>📝 천문학자의 관측 일지</h3>
+     <p class="sub2">갈릴레이도 망원경으로 본 달을 직접 그리고 적었어요. 오늘 밤 내가 본 하늘을 천문학자처럼 기록해 봐요. 생활기록부 기록에 쓰이니 <b>내 말로, 구체적으로</b> 적어 주세요.</p>
+     <div class="lock" id="rLock"><span style="font-size:1.6rem">🔒</span><span>11월 23일 관측이 끝난 뒤(저녁 8시 30분)부터 쓸 수 있어요.</span></div>
+     <div id="rForm" hidden>
+      <div class="qn" style="margin-top:4px">① 관측 기록: 본 것을 체크하고, 어떻게 보였는지 적어요<small>색깔, 모양, 크기, 밝기, 무엇을 닮았는지</small></div>
+      <div class="obj" id="rSeen">
+       <label><input type="checkbox" value="달">🌕 달</label><input type="text" data-o="달" maxlength="80" placeholder="예) 왼쪽 가장자리 크레이터가 둥근 구멍처럼 또렷했다">
+       <label><input type="checkbox" value="토성">🪐 토성</label><input type="text" data-o="토성" maxlength="80" placeholder="예) 작은 노란 점에 가는 선이 꽂힌 모양">
+       <label><input type="checkbox" value="이중성">✨ 이중성</label><input type="text" data-o="이중성" maxlength="80" placeholder="예) 두 별의 색이 달랐다">
+       <label><input type="checkbox" value="성단">🌌 성단</label><input type="text" data-o="성단" maxlength="80" placeholder="예) 별 가루를 뿌려 놓은 것 같았다">
+       <label><input type="checkbox" value="별자리">⭐ 별자리</label><input type="text" data-o="별자리" maxlength="80" placeholder="찾은 별자리 이름">
+      </div>
+
+      <div class="qn">② 예측 확인: 내 예측은 맞았을까?</div>
+      <div class="cmp" id="rCmp"></div>
+      <textarea id="rDiff" style="min-height:70px" placeholder="예측과 실제가 어떻게 같았고 달랐는지 적어요."></textarea>
+
+      <div class="qn">③ 배운 점: 오늘 밤 알게 된 우주 사실 두 가지</div>
+      <p class="prompt">강의나 관측에서 새로 알게 된 것. "~라는 것을 알게 되었다"로 써 보세요.</p>
+      <textarea id="rLearn" placeholder="1. &#10;2. "></textarea>
+
+      <div class="qn">④ 느낀 점: 망원경을 처음 들여다본 순간</div>
+      <p class="prompt">무엇을 보았고, 그 순간 어떤 기분이 들었는지, 왜 그런 기분이었는지 적어요.</p>
+      <textarea id="rFeel"></textarea>
+
+      <div class="qn">⑤ 실천할 점: 다음 맑은 밤, 나의 관측 계획</div>
+      <p class="prompt">언제, 어디서, 무엇을 찾아볼지. 예) 12월 보름 전후에 우리 집 베란다에서 쌍안경으로 달 크레이터 찾기</p>
+      <textarea id="rPlan" style="min-height:70px"></textarea>
+
+      <div class="qn">⑥ 오늘 밤을 해시태그 3개로</div>
+      <input type="text" id="rTags" maxlength="60" placeholder="#토성고리가_실화냐 #손이_꽁꽁 #또_보고싶다">
+
+      <div class="qn">⑦ 오늘 관측, 별 몇 개?</div>
+      <div class="seg" id="rStars"><label><input type="radio" name="stars" value="1">★</label><label><input type="radio" name="stars" value="2">★★</label><label><input type="radio" name="stars" value="3">★★★</label><label><input type="radio" name="stars" value="4">★★★★</label><label><input type="radio" name="stars" value="5">★★★★★</label></div>
+      <button class="cta" id="rSave" type="button">관측 일지 저장하기</button>
+      <div class="saved" id="rSaved" aria-live="polite"></div>
+     </div>
+    </div>
    </div>
   </div>
  </section>
@@ -500,7 +552,7 @@ function paint(){
   /* 정원이 차면 참가자 공간을 열고, 마감 전이고 대기 자리가 남았으면 대기 신청 칸도 함께 보여 줌 */
   const crewOn=!preOn&&(ST.conf>=ST.cap||ST.full||now>ST.closeAt);
   const waitOpen=crewOn&&!ST.full&&now<=ST.closeAt; $('#toWait').hidden=!waitOpen;
-  $('#crew').hidden=!crewOn; $('#apply').hidden=crewOn&&!waitOpen; $('#lk').closest('section').hidden=crewOn&&!waitOpen;
+  $('#crew').hidden=!crewOn; $('#topnav').hidden=!crewOn; if(!crewOn&&document.body.dataset.v==='crew')setView('main'); $('#apply').hidden=crewOn&&!waitOpen; $('#lk').closest('section').hidden=crewOn&&!waitOpen;
   if(waitOpen){$('#applyLead').innerHTML='정원 30명이 모두 찼어요. 지금은 <b>대기 신청</b>만 받아요(5명, 11월 10일(화) 오후 6시까지). 참가자 중 빈자리가 생기면 <b>대기 순서대로 담당 선생님이 연락</b>드려요.';
     btn.disabled=false;btn.textContent='대기로 신청하기';}
   if(crewOn&&waitOpen){$('#seatLb').textContent='참가 확정';$('#dots').style.display='none';$('#waitTxt').style.display='';
@@ -508,8 +560,8 @@ function paint(){
     $('#stateTxt').innerHTML='정원이 찼어요. 지금은 <b>대기 신청</b>만 받아요(남은 대기 '+Math.max(0,ST.wait-ST.waiting)+'자리). 빈자리가 생기면 대기 순서대로 연락드려요.<br>참가자는 <b>참가자 공간</b>에서 일정과 미션을 확인해 주세요.';
     cta.textContent='🔭 참가자 공간 들어가기'; return;}
   if(crewOn){$('#seatLb').textContent='모집 완료';$('#dots').style.display='none';$('#waitTxt').style.display='none';
-    $('#left').innerHTML=(ST.conf+ST.waiting)+'<small>명 참가</small>';
-    $('#stateTxt').innerHTML='신청해 줘서 고마워요! 참가자는 <b>참가자 공간</b>에서 일정·안전 약속을 확인하고 <b>관측 전 미션</b>을 해 주세요.';
+    $('#left').innerHTML=ST.conf+'<small>명 확정</small>'; if(ST.waiting){$('#waitTxt').style.display='';$('#waitTxt').textContent='대기 '+ST.waiting+'명';}
+    $('#stateTxt').innerHTML='신청해 줘서 고마워요! 참가자는 <b>참가자 공간</b>에서 일정을 확인하고 <b>사전 활동</b>을 해 주세요.'+(ST.waiting?' 빈자리가 생기면 대기 순서대로 연락드려요.':'');
     cta.textContent='🔭 참가자 공간 들어가기'; return;}
   if(preOn){$('#stateTxt').innerHTML='정식 신청은 <b>11월 7일(토) 오전 9시</b> · 남은 시간 <b>'+fmtLeft(ST.openAt-now)+'</b><br>지금은 인원 제한 없이 <b>예비 신청</b>을 받고 있어요. 정식 신청은 1학년 25명이에요(미달 시 2학년 추가 모집).';btn.disabled=true;btn.textContent='11월 7일(토) 오전 9시에 열려요';cta.textContent='✋ 예비 신청하기';}
   else if(now>ST.closeAt){$('#stateTxt').innerHTML='<b>신청이 마감되었어요.</b>';btn.disabled=true;btn.textContent='신청 마감';cta.textContent='신청 확인하기';}
@@ -519,8 +571,14 @@ function paint(){
 async function refresh(){try{ST=await run('status');skew=ST.now-Date.now();paint();}catch(e){$('#stateTxt').textContent='연결이 원활하지 않아요. 새로고침해 주세요.';}}
 refresh(); setInterval(paint,1000); setInterval(refresh,30000);
 /* Apps Script 페이지에서는 #링크가 창 전체를 이동시켜 빈 화면이 되므로, 스크립트로 스크롤 */
-$('#toForm').onclick=()=>{const t=(ST&&!$('#crew').hidden)?$('#crew'):(ST&&Date.now()+skew<ST.openAt)?$('#pre'):(ST&&(Date.now()+skew>ST.closeAt||ST.full))?$('#lk'):$('#apply');t.scrollIntoView({behavior:'smooth',block:'start'});};
+$('#toForm').onclick=()=>{if(ST&&!$('#crew').hidden){setView('crew');return;} const t=(ST&&Date.now()+skew<ST.openAt)?$('#pre'):(ST&&(Date.now()+skew>ST.closeAt||ST.full))?$('#lk'):$('#apply');t.scrollIntoView({behavior:'smooth',block:'start'});};
 
+/* 상단 탭 · 참가자 공간 안 탭 */
+function setView(v){document.body.dataset.v=v;document.querySelectorAll('#topnav button').forEach(b=>b.setAttribute('aria-selected',b.dataset.v===v));window.scrollTo({top:0});}
+document.querySelectorAll('#topnav button').forEach(b=>b.onclick=()=>setView(b.dataset.v));
+function setSub(k){document.querySelectorAll('.subnav button').forEach(b=>b.setAttribute('aria-selected',b.dataset.sub===k));document.querySelectorAll('[data-pane]').forEach(p=>p.hidden=p.dataset.pane!==k);}
+document.querySelectorAll('.subnav button').forEach(b=>b.onclick=()=>setSub(b.dataset.sub));
+document.body.dataset.v='main';
 $('#toWait').onclick=()=>$('#apply').scrollIntoView({behavior:'smooth',block:'start'});
 /* ── 참가자 공간 ── */
 let ME=null, MEINFO=null;
@@ -536,10 +594,11 @@ function fillCrew(r){
   const mine={q1:p[3],q2:p[4],q3:p[5]}, lab={q1:'① 달 모양',q2:'② 토성 고리',q3:'③ 크레이터'};
   $('#rCmp').innerHTML=Object.keys(ANS).map(k=>'<div>'+lab[k]+' · 내 예측 <b>'+(mine[k]?esc(mine[k]):'(안 함)')+'</b> → 정답 <b>'+ANS[k][0]+'</b>'+(mine[k]===ANS[k][0]?' ✔':'')+'<br><span style="color:var(--dim)">'+ANS[k][1]+'</span></div>').join('');
   const f=r.refl||[]; (f[0]||'').split(',').forEach(v=>{const e=document.querySelector('#rSeen input[value="'+v.trim()+'"]');if(e)e.checked=true;});
-  $('#rBest').value=f[1]||''; $('#rDiff').value=f[2]||''; $('#rLearn').value=f[3]||''; $('#rWonder').value=f[4]||''; $('#rLine').value=f[5]||''; setPick('stars',f[6]);
+  (f[1]||'').split(' / ').forEach(x=>{const m=x.match(/^(달|토성|이중성|성단|별자리):\s*(.*)$/);if(m){const t=document.querySelector('#rSeen input[data-o="'+m[1]+'"]');if(t)t.value=m[2];}});
+  $('#rDiff').value=f[2]||''; $('#rLearn').value=f[3]||''; $('#rFeel').value=f[4]||''; $('#rPlan').value=f[5]||''; $('#rTags').value=f[6]||''; setPick('stars',f[7]);
   if(r.refl)$('#rSaved').textContent='✔ 저장된 관측 일지가 있어요.';
   $('#absBox').hidden=!!r.absent; $('#absDone').hidden=!r.absent;
-  $('#cLogin').hidden=true; $('#cIn').hidden=false;
+  $('#cLogin').hidden=true; $('#cIn').hidden=false; setSub(open?'post':(r.pre?'info':'pre'));
 }
 function celebrate(name,wait,rank){
   const o=document.createElement('div');o.id='cel';o.setAttribute('role','dialog');o.setAttribute('aria-label','축하 메시지');
@@ -577,8 +636,11 @@ $('#aSave').onclick=async()=>{const o=$('#aSaved'),b=$('#aSave'); if(!ME)return;
   try{const r=await run('savePre',Object.assign({},ME,{a}));o.textContent=r.ok?'✔ 저장했어요! 관측 날 예측이 맞았는지 확인해 봐요.':r.msg; if(r.ok&&MEINFO){MEINFO.pre=[a.safety?'동의':'',a.want,a.why,a.q1,a.q2,a.q3,a.ask];}}catch(e){o.textContent='저장하지 못했어요. 다시 눌러 주세요.';}
   b.disabled=false;};
 $('#rSave').onclick=async()=>{const o=$('#rSaved'),b=$('#rSave'); if(!ME)return;
-  const a={seen:[...document.querySelectorAll('#rSeen input:checked')].map(e=>e.value).join(', '),best:$('#rBest').value.trim(),diff:$('#rDiff').value.trim(),learn:$('#rLearn').value.trim(),wonder:$('#rWonder').value.trim(),line:$('#rLine').value.trim(),stars:pick('stars')};
-  if(a.best.length<10){o.textContent='3번(가장 기억에 남는 장면)을 조금 더 자세히 적어 주세요.';return;}
+  const a={seen:[...document.querySelectorAll('#rSeen input:checked')].map(e=>e.value).join(', '),
+    desc:[...document.querySelectorAll('#rSeen input[data-o]')].filter(e=>e.value.trim()).map(e=>e.dataset.o+': '+e.value.trim()).join(' / '),
+    diff:$('#rDiff').value.trim(),learn:$('#rLearn').value.trim(),feel:$('#rFeel').value.trim(),plan:$('#rPlan').value.trim(),tags:$('#rTags').value.trim(),stars:pick('stars')};
+  const miss=!a.seen?'① 본 것을 하나 이상 체크해 주세요.':a.learn.length<15?'③ 배운 점을 두 가지, 조금 더 자세히 적어 주세요.':a.feel.length<15?'④ 느낀 점을 조금 더 자세히 적어 주세요.':a.plan.length<8?'⑤ 실천할 점(관측 계획)을 적어 주세요.':'';
+  if(miss){o.textContent=miss;return;}
   b.disabled=true;o.textContent='저장하는 중…';
   try{const r=await run('saveRefl',Object.assign({},ME,{a}));o.textContent=r.ok?'✔ 관측 일지를 저장했어요. 수고했어요!':r.msg;}catch(e){o.textContent='저장하지 못했어요. 다시 눌러 주세요.';}
   b.disabled=false;};
