@@ -20,7 +20,9 @@ var EVENT = {
   CAP: 25,                                // 정원
   WAIT: 5,                                // 대기 인원
   GRADES: ['1'],                          // 정식 신청 가능 학년 — 2학년 추가 모집 때 ['1', '2'] 로 바꾸고 '새 버전' 배포
-  PRE_GRADES: ['1', '2']                  // 예비신청은 1·2학년 모두 (추가 모집 인원 가늠용)
+  PRE_GRADES: ['1', '2'],                 // 예비신청은 1·2학년 모두 (추가 모집 인원 가늠용)
+  REFLECT_AT: '2026-11-23T20:30:00+09:00', // 관측 일지(소감) 쓰기가 열리는 시각
+  NOTIFY: true                            // 불참 알림이 오면 이 스크립트 주인(선생님) 메일로 알림
 };
 var SHEET = '신청';
 var HEAD = ['접수번호','접수시각','상태','학년','반','번호','이름','신청자','보호자 연락처','귀가 방법','개인정보 동의'];
@@ -41,6 +43,10 @@ function doPost(e){
     else if(p.fn==='apply') out = apply(p.arg||{});
     else if(p.fn==='check') out = check(p.arg||{});
     else if(p.fn==='pre') out = preApply(p.arg||{});
+    else if(p.fn==='me') out = me(p.arg||{});
+    else if(p.fn==='absent') out = absent(p.arg||{});
+    else if(p.fn==='savePre') out = savePre(p.arg||{});
+    else if(p.fn==='saveRefl') out = saveRefl(p.arg||{});
     else out = {error:'알 수 없는 요청'};
   }catch(err){ out = {error:String(err)}; }
   return ContentService.createTextOutput(JSON.stringify(out)).setMimeType(ContentService.MimeType.JSON);
@@ -62,7 +68,7 @@ function counts_(r){
 function status(){
   var now = new Date(), open = new Date(EVENT.OPEN_AT), close = new Date(EVENT.CLOSE_AT), c = counts_(rows_());
   return { now: now.getTime(), openAt: open.getTime(), closeAt: close.getTime(), cap: EVENT.CAP, wait: EVENT.WAIT,
-           conf: c.conf, waiting: c.wait, full: c.conf>=EVENT.CAP && c.wait>=EVENT.WAIT, pre: preCount_(), grades: EVENT.GRADES };
+           conf: c.conf, waiting: c.wait, full: c.conf>=EVENT.CAP && c.wait>=EVENT.WAIT, pre: preCount_(), grades: EVENT.GRADES, reflectAt: new Date(EVENT.REFLECT_AT).getTime() };
 }
 
 /* ───────── 예비신청: 정식 신청(OPEN_AT) 전까지 인원 파악용. 선착순 순서와는 무관 ───────── */
@@ -136,4 +142,78 @@ function check(f){
       return {ok:true, no:r[i][0], status:String(r[i][2]), name:name};
   }
   return {ok:false, msg:'신청 기록을 찾지 못했어요. 학년·반·번호·이름을 다시 확인해 주세요.'};
+}
+
+
+/* ═════════ 참가자 공간 (모집이 끝난 뒤) ═════════
+   참가자 = '신청' 탭에서 상태가 '확정' 또는 '대기'인 학생 (대기자도 모두 참가)
+   학생이 불참을 알리면 상태가 '불참 알림'으로 바뀌고 '불참알림' 탭에 기록, 선생님 메일로 알림 */
+var ABS_SHEET = '불참알림', ABS_HEAD = ['알린시각','학년','반','번호','이름','사유','처리'];
+var PREACT_SHEET = '사전활동', PREACT_HEAD = ['저장시각','학년','반','번호','이름','안전약속','가장 보고 싶은 것','이유','예측1 달 모양','예측2 토성 고리','예측3 크레이터','강사님께 질문'];
+var REFL_SHEET = '관측일지', REFL_HEAD = ['저장시각','학년','반','번호','이름','실제로 본 것','기억에 남는 장면','예상과 달랐던 점','새로 알게 된 점','더 궁금해진 점','한 줄 소감','별점'];
+
+function tab_(name, head, color){
+  var ss = SpreadsheetApp.getActiveSpreadsheet(), t = ss.getSheetByName(name);
+  if(!t){ t = ss.insertSheet(name); t.appendRow(head); t.setFrozenRows(1); t.getRange(1,1,1,head.length).setFontWeight('bold').setBackground(color||'#1f2a55').setFontColor('#ffffff'); }
+  return t;
+}
+function who_(f){ return {g:clean_(f.grade,2), b:clean_(f.cls,3), n:clean_(f.num,3), name:clean_(f.name,20)}; }
+function findP_(w){
+  var r = rows_();
+  for(var i=r.length-1;i>=0;i--){
+    if(String(r[i][3])===w.g && String(r[i][4])===w.b && String(r[i][5])===w.n && String(r[i][6])===w.name){
+      var st = String(r[i][2]);
+      if(st==='확정' || st==='대기' || st==='불참 알림') return {row:i+2, status:st, no:r[i][0]};
+    }
+  }
+  return null;
+}
+function rowOf_(t, head, w){
+  var n = t.getLastRow(); if(n<2) return null;
+  var v = t.getRange(2,1,n-1,head.length).getValues();
+  for(var i=0;i<v.length;i++) if(String(v[i][1])===w.g && String(v[i][2])===w.b && String(v[i][3])===w.n) return {row:i+2, vals:v[i]};
+  return null;
+}
+function upsert_(t, head, w, vals){
+  var line = [new Date(), w.g, w.b, w.n, w.name].concat(vals), hit = rowOf_(t, head, w);
+  if(hit) t.getRange(hit.row,1,1,line.length).setValues([line]); else t.appendRow(line);
+}
+function me(f){
+  var w = who_(f), p = findP_(w);
+  if(!p) return {ok:false, msg:'참가자 명단에서 찾지 못했어요. 학년·반·번호·이름을 신청할 때와 똑같이 적어 주세요.'};
+  var pre = rowOf_(tab_(PREACT_SHEET, PREACT_HEAD, '#3b2a6e'), PREACT_HEAD, w);
+  var rf = rowOf_(tab_(REFL_SHEET, REFL_HEAD, '#0f5c4d'), REFL_HEAD, w);
+  return {ok:true, name:w.name, no:p.no, absent: p.status==='불참 알림',
+          pre: pre ? pre.vals.slice(5) : null, refl: rf ? rf.vals.slice(5) : null,
+          reflectAt: new Date(EVENT.REFLECT_AT).getTime(), now: Date.now()};
+}
+function absent(f){
+  var lock = LockService.getScriptLock(); if(!lock.tryLock(20000)) return {ok:false, msg:'잠시 뒤 다시 눌러 주세요.'};
+  try{
+    var w = who_(f), p = findP_(w), why = clean_(f.reason, 200);
+    if(!p) return {ok:false, msg:'참가자 명단에서 찾지 못했어요.'};
+    if(why.length<2) return {ok:false, msg:'못 오는 까닭을 짧게 적어 주세요.'};
+    sh().getRange(p.row, 3).setValue('불참 알림');
+    tab_(ABS_SHEET, ABS_HEAD, '#7a2c47').appendRow([new Date(), w.g, w.b, w.n, w.name, why, '']);
+    if(EVENT.NOTIFY){
+      try{ MailApp.sendEmail(Session.getEffectiveUser().getEmail(), '[천체관측] 불참 알림 – '+w.g+'학년 '+w.b+'반 '+w.name,
+        w.g+'학년 '+w.b+'반 '+w.n+'번 '+w.name+' 학생이 11/23 천체관측에 참여하지 못한다고 알렸습니다.\n사유: '+why+'\n\n구글 시트의 \'불참알림\' 탭과 \'신청\' 탭(상태: 불참 알림)을 확인해 주세요.'); }catch(e){}
+    }
+    return {ok:true};
+  } finally { lock.releaseLock(); }
+}
+function savePre(f){
+  var w = who_(f); if(!findP_(w)) return {ok:false, msg:'참가자 명단에서 찾지 못했어요.'};
+  var a = f.a || {};
+  upsert_(tab_(PREACT_SHEET, PREACT_HEAD, '#3b2a6e'), PREACT_HEAD, w,
+    [a.safety?'동의':'', clean_(a.want,20), clean_(a.why,200), clean_(a.q1,20), clean_(a.q2,20), clean_(a.q3,20), clean_(a.ask,200)]);
+  return {ok:true};
+}
+function saveRefl(f){
+  var w = who_(f); if(!findP_(w)) return {ok:false, msg:'참가자 명단에서 찾지 못했어요.'};
+  if(new Date() < new Date(EVENT.REFLECT_AT)) return {ok:false, msg:'관측 일지는 관측이 끝난 뒤(11/23 20:30)부터 쓸 수 있어요.'};
+  var a = f.a || {};
+  upsert_(tab_(REFL_SHEET, REFL_HEAD, '#0f5c4d'), REFL_HEAD, w,
+    [clean_(a.seen,80), clean_(a.best,400), clean_(a.diff,400), clean_(a.learn,400), clean_(a.wonder,400), clean_(a.line,120), clean_(a.stars,2)]);
+  return {ok:true};
 }
