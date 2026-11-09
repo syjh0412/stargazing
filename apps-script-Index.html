@@ -295,6 +295,7 @@ footer{margin-top:60px;padding-top:20px;border-top:1px solid var(--line);color:v
     <input type="text" name="name" class="nm" placeholder="학생 이름" maxlength="10" aria-label="학생 이름" autocomplete="off">
    </div>
    <button class="cta" id="cGo" type="button">🔭 참가자 공간 들어가기</button>
+   <button class="btn2" id="cT" type="button" hidden>👩‍🏫 선생님 미리보기로 둘러보기</button>
    <div class="msg" id="cMsg" role="alert"></div>
   </div>
 
@@ -601,6 +602,7 @@ footer{margin-top:60px;padding-top:20px;border-top:1px solid var(--line);color:v
   <div id="tIn" hidden>
    <div class="crewcard">
     <h3>📊 참가 현황 <button class="linkbtn" id="tReload" type="button" style="margin-left:auto">새로고침</button></h3>
+    <button class="btn2" id="tPeek" type="button" style="margin:0 0 12px">🔭 학생 참가자 화면 미리보기 (모든 단계 열림)</button>
     <div class="kpis" id="tKpi"></div>
     <p class="sub2" id="tNote" style="margin:10px 0 0"></p>
    </div>
@@ -741,7 +743,7 @@ function paint(){
   /* 정원이 차면 참가자 공간을 열고, 마감 전이고 대기 자리가 남았으면 대기 신청 칸도 함께 보여 줌 */
   const crewOn=!preOn&&(ST.conf>=ST.cap||ST.full||now>ST.closeAt);
   const waitOpen=crewOn&&!ST.full&&now<=ST.closeAt; $('#toWait').hidden=!waitOpen;
-  $('#crew').hidden=!crewOn; $('#navCrew').hidden=!crewOn; if(!crewOn&&document.body.dataset.v==='crew')setView('main'); $('#apply').hidden=crewOn&&!waitOpen; $('#lk').closest('section').hidden=crewOn&&!waitOpen;
+  $('#crew').hidden=!crewOn&&!TMODE; $('#navCrew').hidden=!crewOn&&!TMODE; if(!crewOn&&!TMODE&&document.body.dataset.v==='crew')setView('main'); $('#apply').hidden=crewOn&&!waitOpen; $('#lk').closest('section').hidden=crewOn&&!waitOpen;
   if(waitOpen){$('#applyLead').innerHTML='정원 30명이 모두 찼어요. 지금은 <b>대기 신청</b>만 받아요(5명, 11월 10일(화) 오후 6시까지). 참가자 중 빈자리가 생기면 <b>대기 순서대로 담당 선생님이 연락</b>드려요.';
     btn.disabled=false;btn.textContent='대기로 신청하기';}
   if(crewOn&&waitOpen){$('#seatLb').textContent='참가 확정';$('#dots').style.display='none';$('#waitTxt').style.display='';
@@ -799,11 +801,16 @@ function renderStaff(d){
 async function staffLoad(pin,first){
   const m=$('#tMsg'); m.className='msg';
   try{const d=await run('staff',{pin}); if(!d.ok){m.textContent=d.msg||'비밀번호가 맞지 않아요.';m.className='msg err';return false;}
-    TPIN=pin; try{sessionStorage.setItem('sg_pin',pin);}catch(e){} $('#tLogin').hidden=true;$('#tIn').hidden=false; renderStaff(d); if(first)teacherCelebrate(); return true;
+    TPIN=pin; $('#cT').hidden=false; try{sessionStorage.setItem('sg_pin',pin);}catch(e){} $('#tLogin').hidden=true;$('#tIn').hidden=false; renderStaff(d); if(first)teacherCelebrate(); return true;
   }catch(e){
-    if(pin==='1234'){TPIN=pin;$('#tLogin').hidden=true;$('#tIn').hidden=false;$('#tKpi').innerHTML='';$('#tNote').textContent='명단을 불러오지 못했어요. (Apps Script를 새 버전으로 배포하면 보여요)';$('#tRoster').innerHTML='<tr><td colspan="5" style="color:var(--dim)">명단을 불러오지 못했어요.</td></tr>';if(first)teacherCelebrate();return true;}
+    if(pin==='1234'){TPIN=pin;$('#cT').hidden=false;$('#tLogin').hidden=true;$('#tIn').hidden=false;$('#tKpi').innerHTML='';$('#tNote').textContent='명단을 불러오지 못했어요. (Apps Script를 새 버전으로 배포하면 보여요)';$('#tRoster').innerHTML='<tr><td colspan="5" style="color:var(--dim)">명단을 불러오지 못했어요.</td></tr>';if(first)teacherCelebrate();return true;}
     m.textContent='연결이 원활하지 않아요. 다시 눌러 주세요.';m.className='msg err';return false;}
 }
+function teacherPeek(){TMODE=true;ME=null;
+  fillCrew({name:'선생님 미리보기',no:0,status:'확정',absent:false,pre:null,refl:null,reflectAt:0});
+  $('#cName').textContent='선생님'; $('#cTag').textContent='👩‍🏫 미리보기 · 저장되지 않아요'; $('#cTag').className='tag'; $('#cOut').textContent='미리보기 끝내기';
+  $('#crew').hidden=false; setView('crew'); setSub('pre');}
+$('#tPeek').onclick=teacherPeek; $('#cT').onclick=teacherPeek;
 $('#tGo').onclick=()=>{const p=$('#tPin').value.trim(); if(!p)return; const b=$('#tGo');b.disabled=true;staffLoad(p,true).finally(()=>b.disabled=false);};
 $('#tPin').addEventListener('keydown',e=>{if(e.key==='Enter')$('#tGo').click();});
 $('#tReload').onclick=()=>TPIN&&staffLoad(TPIN,false);
@@ -811,7 +818,7 @@ $('#tClear').onclick=()=>{TL.set({});document.querySelectorAll('#tRoster input')
 {let sp='';try{sp=sessionStorage.getItem('sg_pin')||'';}catch(e){} if(sp)staffLoad(sp,false);}
 $('#toWait').onclick=()=>$('#apply').scrollIntoView({behavior:'smooth',block:'start'});
 /* ── 참가자 공간 ── */
-let ME=null, MEINFO=null;
+let ME=null, MEINFO=null, TMODE=false;
 const LS={get(){try{return JSON.parse(localStorage.getItem('sg_me')||'null')}catch(e){return null}},set(v){try{v?localStorage.setItem('sg_me',JSON.stringify(v)):localStorage.removeItem('sg_me')}catch(e){}}};
 const ANS={q1:['거의 보름달','11월 23일은 보름(24일) 바로 전날이라 98% 둥근 달이에요.'],q2:['얇은 선처럼','2025년 3월에 고리가 지구에서 옆면으로 보였다가 조금씩 열리는 중이라, 2026년 11월에는 약 6°만 기울어 가늘게 보여요.'],q3:['반달일 때','햇빛이 비스듬히 비치는 반달 무렵에 그림자가 길어 크레이터가 입체적으로 보여요. 보름달은 정면으로 빛을 받아 평평해 보여요.']};
 const pick=n=>(document.querySelector('input[name='+n+']:checked')||{}).value||'';
@@ -830,7 +837,7 @@ function fillCrew(r){
   $('#rF1').value=part(f[4],'본 것'); $('#rF2').value=part(f[4],'기분'); $('#rF3').value=part(f[4],'까닭');
   $('#rP1').value=part(f[5],'언제'); $('#rP2').value=part(f[5],'어디서'); $('#rP3').value=part(f[5],'무엇을');
   $('#rTags').value=f[6]||''; setPick('stars',f[7]);
-  if(!r.refl&&open){let dr=null;try{dr=JSON.parse(localStorage.getItem('sg_rdraft_'+(ME||LS.get()||{}).grade+(ME||LS.get()||{}).cls+(ME||LS.get()||{}).num)||'null')}catch(e){}
+  if(!r.refl&&open&&!TMODE){let dr=null;try{dr=JSON.parse(localStorage.getItem('sg_rdraft_'+(ME||LS.get()||{}).grade+(ME||LS.get()||{}).cls+(ME||LS.get()||{}).num)||'null')}catch(e){}
     if(dr){(dr.seen||'').split(',').forEach(v=>{const e=document.querySelector('#rSeen input[value="'+v.trim()+'"]');if(e)e.checked=true;});
       (dr.desc||'').split(' / ').forEach(x=>{const m=x.match(/^(달|토성|이중성|성단|별자리):\s*(.*)$/);if(m){const t=document.querySelector('#rSeen input[data-o="'+m[1]+'"]');if(t)t.value=m[2];}});
       $('#rDiff').value=dr.diff||''; $('#rL1').value=part(dr.learn,'1.'); $('#rL2').value=part(dr.learn,'2.');
@@ -868,9 +875,9 @@ async function crewLogin(d,quiet){
 $('#cGo').onclick=()=>{const q=n=>$('#cF [name='+n+']').value.trim(); const d={grade:q('grade'),cls:q('cls'),num:q('num'),name:q('name')};
   if(!d.grade||!d.cls||!d.num||!d.name){$('#cMsg').textContent='학년·반·번호·이름을 모두 적어 주세요.';$('#cMsg').className='msg err';return;}
   const b=$('#cGo');b.disabled=true;b.textContent='찾는 중…'; crewLogin(d).finally(()=>{b.disabled=false;b.textContent='🔭 참가자 공간 들어가기';});};
-$('#cOut').onclick=()=>{ME=null;LS.set(null);$('#cIn').hidden=true;$('#cLogin').hidden=false;document.querySelectorAll('#cIn input[type=radio],#cIn input[type=checkbox]').forEach(e=>e.checked=false);document.querySelectorAll('#cIn textarea,#cIn input[type=text]').forEach(e=>e.value='');$('#aSaved').textContent='';$('#rSaved').textContent='';};
+$('#cOut').onclick=()=>{ME=null;TMODE=false;$('#cOut').textContent='다른 학생으로 들어가기';LS.set(null);$('#cIn').hidden=true;$('#cLogin').hidden=false;document.querySelectorAll('#cIn input[type=radio],#cIn input[type=checkbox]').forEach(e=>e.checked=false);document.querySelectorAll('#cIn textarea,#cIn input[type=text]').forEach(e=>e.value='');$('#aSaved').textContent='';$('#rSaved').textContent='';};
 {const saved=LS.get(); if(saved) crewLogin(saved,true);}
-$('#aSave').onclick=async()=>{const o=$('#aSaved'),b=$('#aSave'); if(!ME)return;
+$('#aSave').onclick=async()=>{const o=$('#aSaved'),b=$('#aSave'); if(TMODE){o.textContent='👩‍🏫 선생님 미리보기에서는 저장되지 않아요.';return;} if(!ME)return;
   const a={safety:$('#aSafety').checked,want:pick('want'),why:$('#aWhy').value.trim(),q1:pick('q1'),q2:pick('q2'),q3:pick('q3'),ask:$('#aAsk').value.trim()};
   b.disabled=true;o.textContent='저장하는 중…';
   try{const r=await run('savePre',Object.assign({},ME,{a}));o.textContent=r.ok?'✔ 저장했어요! 관측 날 예측이 맞았는지 확인해 봐요.':r.msg; if(r.ok&&MEINFO){MEINFO.pre=[a.safety?'동의':'',a.want,a.why,a.q1,a.q2,a.q3,a.ask];}}catch(e){o.textContent='저장하지 못했어요. 다시 눌러 주세요.';}
@@ -903,14 +910,14 @@ function showStep(k){RSTEP=k;
     $('#rPrev').innerHTML='<b>관측 기록</b>\n'+esc(a.desc.split(' / ').join('\n'))+'\n\n<b>예측과 실제</b>\n'+esc(a.diff)+'\n\n<b>배운 점</b>\n'+esc(a.learn.split(' / ').join('\n'))+'\n\n<b>느낀 점</b>\n'+L(a.feel)+'\n\n<b>실천할 점</b>\n'+L(a.plan)+'\n\n'+esc(a.tags)+(a.stars?'  '+'★'.repeat(Number(a.stars)):'');}
   if(ME)try{localStorage.setItem('sg_rdraft_'+ME.grade+ME.cls+ME.num,JSON.stringify(rData()))}catch(e){}
 }
-$('#rNextBtn').onclick=()=>{const o=$('#rSaved'); if($('#rForm').classList.contains('lockview')){showStep(0);return;} const m=stepCheck(RSTEP); o.textContent=m; if(m)return; showStep(Math.min(6,RSTEP+1)); $('#rForm').scrollIntoView({behavior:'smooth',block:'start'});};
+$('#rNextBtn').onclick=()=>{const o=$('#rSaved'); if($('#rForm').classList.contains('lockview')){showStep(0);return;} const m=TMODE?'':stepCheck(RSTEP); o.textContent=m; if(m)return; showStep(Math.min(6,RSTEP+1)); $('#rForm').scrollIntoView({behavior:'smooth',block:'start'});};
 $('#rPrevBtn').onclick=()=>{$('#rSaved').textContent='';showStep(Math.max(0,RSTEP-1));};
 document.querySelectorAll('.starters').forEach(g=>g.querySelectorAll('button').forEach(b=>b.onclick=()=>{const t=$('#'+g.dataset.for);const add=b.textContent;t.value=t.value.trim()?t.value.trim()+' '+add:add;t.focus();}));
-$('#rSave').onclick=async()=>{const o=$('#rSaved'),b=$('#rSave'); if(!ME)return;
+$('#rSave').onclick=async()=>{const o=$('#rSaved'),b=$('#rSave'); if(TMODE){o.textContent='👩‍🏫 선생님 미리보기에서는 저장되지 않아요.';return;} if(!ME)return;
   const a=rData(); b.disabled=true;o.textContent='저장하는 중…';
   try{const r=await run('saveRefl',Object.assign({},ME,{a}));o.textContent=r.ok?'✔ 관측 일지를 저장했어요. 오늘 밤 수고했어요! 🌙':r.msg;}catch(e){o.textContent='저장하지 못했어요. 다시 눌러 주세요.';}
   b.disabled=false;};
-$('#absGo').onclick=async()=>{const m=$('#absMsg'),b=$('#absGo'),why=$('#absWhy').value.trim(); m.className='msg'; if(!ME)return;
+$('#absGo').onclick=async()=>{const m=$('#absMsg'),b=$('#absGo'),why=$('#absWhy').value.trim(); m.className='msg'; if(TMODE){m.textContent='👩‍🏫 선생님 미리보기에서는 보내지지 않아요.';m.className='msg err';return;} if(!ME)return;
   if(why.length<2){m.textContent='못 오는 까닭을 짧게 적어 주세요.';m.className='msg err';return;}
   b.disabled=true;
   try{const r=await run('absent',Object.assign({},ME,{reason:why})); if(!r.ok){m.textContent=r.msg;m.className='msg err';b.disabled=false;return;}
