@@ -172,6 +172,29 @@ table.roster input{width:20px;height:20px;accent-color:var(--mint)}
 .obj input[type=checkbox]{width:20px;height:20px;accent-color:var(--gold)}
 .obj input[type=text]{min-height:44px;font-size:.95rem}
 .prompt{font-size:.88rem;color:var(--faint);margin:-4px 0 8px}
+/* 관측 일지 단계 */
+.steps{display:flex;gap:6px;margin:4px 0 14px}
+.steps i{flex:1;height:6px;border-radius:3px;background:#26325f}
+.steps i.on{background:var(--gold)}.steps i.done{background:#8a6d2a}
+.stepno{font-size:.82rem;color:var(--gold);font-weight:700;letter-spacing:.06em}
+.step h4{margin:4px 0 6px;font-size:1.25rem;font-family:"Gowun Batang",serif}
+.step .why{color:var(--dim);font-size:.93rem;margin:0 0 12px}
+.fld{margin-bottom:12px}
+.fld>span{display:block;font-weight:700;margin-bottom:6px;font-size:.96rem}
+.fld>span small{font-weight:400;color:var(--faint);margin-left:6px}
+.starters{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 8px}
+.starters button{border:1px dashed #4a5590;background:none;color:var(--dim);border-radius:999px;padding:6px 12px;font:inherit;font-size:.85rem;cursor:pointer;min-height:36px}
+.starters button:hover{color:var(--gold);border-color:var(--gold)}
+.ex{background:#0b1a2e;border-left:0;border:1px solid #1f3a5a;border-radius:12px;padding:10px 14px;font-size:.88rem;color:#b9d4f0;margin:0 0 12px}
+.ex b{color:#8fd0ff}
+.stepnav{display:flex;gap:8px;margin-top:14px}
+.stepnav button{flex:1;min-height:50px;border-radius:12px;font:inherit;font-weight:700;font-size:1rem;cursor:pointer}
+.stepnav .prev{background:none;border:1px solid #33407a;color:var(--dim)}
+.stepnav .next{background:linear-gradient(90deg,#ffcf6b,#ffa94d);border:0;color:#1b1300}
+.cnt{font-size:.8rem;color:var(--faint);text-align:right;margin-top:-4px}
+.preview{background:#080d24;border:1px solid #26325f;border-radius:12px;padding:14px 16px;font-size:.95rem;line-height:1.75;white-space:pre-line}
+.preview b{color:var(--gold)}
+.lockview .step input,.lockview .step textarea,.lockview .starters,.lockview .obj label,.lockview #rStars,.lockview #rSave{opacity:.5;pointer-events:none}
 /* 축하 화면 */
 #cel{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 45%,#1b245999,#050816e6);backdrop-filter:blur(3px);opacity:0;transition:opacity .35s;overflow:hidden;cursor:pointer}
 #cel.on{opacity:1}
@@ -368,39 +391,86 @@ footer{margin-top:60px;padding-top:20px;border-top:1px solid var(--line);color:v
     <div class="crewcard">
      <h3>📝 천문학자의 관측 일지</h3>
      <p class="sub2">갈릴레이도 망원경으로 본 달을 직접 그리고 적었어요. 오늘 밤 내가 본 하늘을 천문학자처럼 기록해 봐요. 생활기록부 기록에 쓰이니 <b>내 말로, 구체적으로</b> 적어 주세요.</p>
-     <div class="lock" id="rLock"><span style="font-size:1.6rem">🔒</span><span>11월 23일 관측이 끝난 뒤(저녁 8시 30분)부터 쓸 수 있어요.</span></div>
-     <div id="rForm" hidden>
-      <div class="qn" style="margin-top:4px">① 관측 기록: 본 것을 체크하고, 어떻게 보였는지 적어요<small>색깔, 모양, 크기, 밝기, 무엇을 닮았는지</small></div>
-      <div class="obj" id="rSeen">
-       <label><input type="checkbox" value="달">🌕 달</label><input type="text" data-o="달" maxlength="80" placeholder="예) 왼쪽 가장자리 크레이터가 둥근 구멍처럼 또렷했다">
-       <label><input type="checkbox" value="토성">🪐 토성</label><input type="text" data-o="토성" maxlength="80" placeholder="예) 작은 노란 점에 가는 선이 꽂힌 모양">
-       <label><input type="checkbox" value="이중성">✨ 이중성</label><input type="text" data-o="이중성" maxlength="80" placeholder="예) 두 별의 색이 달랐다">
-       <label><input type="checkbox" value="성단">🌌 성단</label><input type="text" data-o="성단" maxlength="80" placeholder="예) 별 가루를 뿌려 놓은 것 같았다">
-       <label><input type="checkbox" value="별자리">⭐ 별자리</label><input type="text" data-o="별자리" maxlength="80" placeholder="찾은 별자리 이름">
+     <div class="lock" id="rLock"><span style="font-size:1.6rem">🔒</span><span>11월 23일 관측이 끝난 뒤(저녁 8시 30분)부터 쓸 수 있어요. 아래에서 어떤 걸 쓰게 될지 미리 살펴보세요.</span></div>
+     <div id="rForm">
+      <div class="steps" id="rSteps"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+
+      <div class="step" data-step="0">
+       <div class="stepno">1 / 7 · 관측 기록</div>
+       <h4>무엇을 보았나요?</h4>
+       <p class="why">본 것을 체크하고, 망원경 속에서 어떻게 보였는지 한 줄씩 적어요. <b>색깔, 모양, 크기, 밝기, 무엇을 닮았는지</b>를 떠올려 보세요.</p>
+       <div class="obj" id="rSeen">
+        <label><input type="checkbox" value="달">🌕 달</label><input type="text" data-o="달" maxlength="80" placeholder="예) 가장자리 크레이터가 둥근 구멍처럼 또렷했다">
+        <label><input type="checkbox" value="토성">🪐 토성</label><input type="text" data-o="토성" maxlength="80" placeholder="예) 노란 공에 가는 선이 꽂힌 모양">
+        <label><input type="checkbox" value="이중성">✨ 이중성</label><input type="text" data-o="이중성" maxlength="80" placeholder="예) 주황색과 파란색 두 별">
+        <label><input type="checkbox" value="성단">🌌 성단</label><input type="text" data-o="성단" maxlength="80" placeholder="예) 별 가루를 뿌려 놓은 것 같았다">
+        <label><input type="checkbox" value="별자리">⭐ 별자리</label><input type="text" data-o="별자리" maxlength="80" placeholder="찾은 별자리 이름">
+       </div>
       </div>
 
-      <div class="qn">② 예측 확인: 내 예측은 맞았을까?</div>
-      <div class="cmp" id="rCmp"></div>
-      <textarea id="rDiff" style="min-height:70px" placeholder="예측과 실제가 어떻게 같았고 달랐는지 적어요."></textarea>
+      <div class="step" data-step="1" hidden>
+       <div class="stepno">2 / 7 · 예측 확인</div>
+       <h4>내 예측은 맞았을까?</h4>
+       <p class="why">관측 전에 했던 예측과 정답을 비교해 보세요.</p>
+       <div class="cmp" id="rCmp"></div>
+       <div class="fld"><span>예측과 실제를 비교하면?<small>한두 문장</small></span>
+        <div class="starters" data-for="rDiff"><button type="button">나는 ~라고 예측했는데, 실제로는</button><button type="button">예측이 맞았던 것은</button><button type="button">가장 의외였던 것은</button></div>
+        <textarea id="rDiff" style="min-height:80px"></textarea></div>
+      </div>
 
-      <div class="qn">③ 배운 점: 오늘 밤 알게 된 우주 사실 두 가지</div>
-      <p class="prompt">강의나 관측에서 새로 알게 된 것. "~라는 것을 알게 되었다"로 써 보세요.</p>
-      <textarea id="rLearn" placeholder="1. &#10;2. "></textarea>
+      <div class="step" data-step="2" hidden>
+       <div class="stepno">3 / 7 · 배운 점</div>
+       <h4>오늘 밤 알게 된 우주 사실 두 가지</h4>
+       <p class="why">강의나 관측에서 새로 알게 된 것을 "~라는 것을 알게 되었다"로 적어요.</p>
+       <div class="ex"><b>이렇게 써 보세요</b><br>토성의 고리는 해마다 기울기가 달라져서, 올해는 얇은 선처럼 보인다는 것을 알게 되었다.</div>
+       <div class="fld"><span>배운 점 ①</span><input type="text" id="rL1" maxlength="150" placeholder="~라는 것을 알게 되었다."></div>
+       <div class="fld"><span>배운 점 ②</span><input type="text" id="rL2" maxlength="150" placeholder="~라는 것을 알게 되었다."></div>
+      </div>
 
-      <div class="qn">④ 느낀 점: 망원경을 처음 들여다본 순간</div>
-      <p class="prompt">무엇을 보았고, 그 순간 어떤 기분이 들었는지, 왜 그런 기분이었는지 적어요.</p>
-      <textarea id="rFeel"></textarea>
+      <div class="step" data-step="3" hidden>
+       <div class="stepno">4 / 7 · 느낀 점</div>
+       <h4>망원경을 처음 들여다본 순간</h4>
+       <p class="why">세 칸을 차례로 채우면 느낀 점이 완성돼요.</p>
+       <div class="fld"><span>① 그때 눈에 들어온 것은?</span><input type="text" id="rF1" maxlength="100" placeholder="예) 접안렌즈에 눈을 대자 토성이 작고 또렷하게 떠 있었다"></div>
+       <div class="fld"><span>② 그 순간 내 기분은?</span>
+        <div class="starters" data-for="rF2"><button type="button">신기했다</button><button type="button">설렜다</button><button type="button">놀랐다</button><button type="button">감동했다</button><button type="button">생각보다 작아서 의외였다</button></div>
+        <input type="text" id="rF2" maxlength="100" placeholder="예) 교과서 사진이 진짜였다는 게 믿기지 않아 소리를 질렀다"></div>
+       <div class="fld"><span>③ 왜 그런 기분이 들었을까?</span><input type="text" id="rF3" maxlength="150" placeholder="예) 수십억 km 떨어진 행성을 내 눈으로 직접 봤기 때문이다"></div>
+      </div>
 
-      <div class="qn">⑤ 실천할 점: 다음 맑은 밤, 나의 관측 계획</div>
-      <p class="prompt">언제, 어디서, 무엇을 찾아볼지. 예) 12월 보름 전후에 우리 집 베란다에서 쌍안경으로 달 크레이터 찾기</p>
-      <textarea id="rPlan" style="min-height:70px"></textarea>
+      <div class="step" data-step="4" hidden>
+       <div class="stepno">5 / 7 · 실천할 점</div>
+       <h4>다음 맑은 밤, 나의 관측 계획</h4>
+       <p class="why">오늘 배운 것으로 다음에 무엇을 해 볼지 정해 봐요.</p>
+       <div class="fld"><span>언제?</span>
+        <div class="starters" data-for="rP1"><button type="button">12월 보름 무렵</button><button type="button">다음 맑은 주말 밤</button><button type="button">겨울 방학 중</button></div>
+        <input type="text" id="rP1" maxlength="40"></div>
+       <div class="fld"><span>어디서?</span>
+        <div class="starters" data-for="rP2"><button type="button">우리 집 베란다에서</button><button type="button">동네 공원에서</button><button type="button">과학 동아리 시간에</button></div>
+        <input type="text" id="rP2" maxlength="40"></div>
+       <div class="fld"><span>무엇을, 어떻게?</span>
+        <div class="starters" data-for="rP3"><button type="button">별자리 앱으로 오리온자리 찾기</button><button type="button">쌍안경으로 달 크레이터 보기</button><button type="button">휴대폰으로 달 사진 찍기</button></div>
+        <input type="text" id="rP3" maxlength="100"></div>
+      </div>
 
-      <div class="qn">⑥ 오늘 밤을 해시태그 3개로</div>
-      <input type="text" id="rTags" maxlength="60" placeholder="#토성고리가_실화냐 #손이_꽁꽁 #또_보고싶다">
+      <div class="step" data-step="5" hidden>
+       <div class="stepno">6 / 7 · 한마디</div>
+       <h4>오늘 밤을 해시태그 3개로!</h4>
+       <p class="why">재미있게, 솔직하게 써 보세요.</p>
+       <input type="text" id="rTags" maxlength="60" placeholder="#토성고리가_실화냐 #손이_꽁꽁 #또_보고싶다">
+       <div class="qn">오늘 관측, 별 몇 개?</div>
+       <div class="seg" id="rStars"><label><input type="radio" name="stars" value="1">★</label><label><input type="radio" name="stars" value="2">★★</label><label><input type="radio" name="stars" value="3">★★★</label><label><input type="radio" name="stars" value="4">★★★★</label><label><input type="radio" name="stars" value="5">★★★★★</label></div>
+      </div>
 
-      <div class="qn">⑦ 오늘 관측, 별 몇 개?</div>
-      <div class="seg" id="rStars"><label><input type="radio" name="stars" value="1">★</label><label><input type="radio" name="stars" value="2">★★</label><label><input type="radio" name="stars" value="3">★★★</label><label><input type="radio" name="stars" value="4">★★★★</label><label><input type="radio" name="stars" value="5">★★★★★</label></div>
-      <button class="cta" id="rSave" type="button">관측 일지 저장하기</button>
+      <div class="step" data-step="6" hidden>
+       <div class="stepno">7 / 7 · 완성</div>
+       <h4>나의 관측 일지</h4>
+       <p class="why">한 번 읽어 보고, 고칠 곳이 있으면 '이전'으로 돌아가 고쳐요.</p>
+       <div class="preview" id="rPrev"></div>
+       <button class="cta" id="rSave" type="button">관측 일지 저장하기</button>
+      </div>
+
+      <div class="stepnav"><button type="button" class="prev" id="rPrevBtn">← 이전</button><button type="button" class="next" id="rNextBtn">다음 →</button></div>
       <div class="saved" id="rSaved" aria-live="polite"></div>
      </div>
     </div>
@@ -749,12 +819,22 @@ function fillCrew(r){
   MEINFO=r; $('#cName').textContent=r.name; const wt=r.status==='대기'; $('#cTag').textContent=wt?'대기 '+r.waitRank+'번 · 빈자리가 생기면 연락드려요':'참가 확정 · No. '+String(r.no).padStart(3,'0'); $('#cTag').className=wt?'tag':'tag mint';
   const p=r.pre||[]; $('#aSafety').checked=p[0]==='동의'; setPick('want',p[1]); $('#aWhy').value=p[2]||''; setPick('q1',p[3]); setPick('q2',p[4]); setPick('q3',p[5]); $('#aAsk').value=p[6]||'';
   if(r.pre)$('#aSaved').textContent='✔ 저장된 미션이 있어요. 고쳐서 다시 저장해도 돼요.';
-  const open=(Date.now()+skew)>=r.reflectAt; $('#rLock').hidden=open; $('#rForm').hidden=!open;
+  const open=(Date.now()+skew)>=r.reflectAt; $('#rLock').hidden=open; $('#rForm').classList.toggle('lockview',!open); RSTEP=0; showStep(0);
   const mine={q1:p[3],q2:p[4],q3:p[5]}, lab={q1:'① 달 모양',q2:'② 토성 고리',q3:'③ 크레이터'};
   $('#rCmp').innerHTML=Object.keys(ANS).map(k=>'<div>'+lab[k]+' · 내 예측 <b>'+(mine[k]?esc(mine[k]):'(안 함)')+'</b> → 정답 <b>'+ANS[k][0]+'</b>'+(mine[k]===ANS[k][0]?' ✔':'')+'<br><span style="color:var(--dim)">'+ANS[k][1]+'</span></div>').join('');
   const f=r.refl||[]; (f[0]||'').split(',').forEach(v=>{const e=document.querySelector('#rSeen input[value="'+v.trim()+'"]');if(e)e.checked=true;});
   (f[1]||'').split(' / ').forEach(x=>{const m=x.match(/^(달|토성|이중성|성단|별자리):\s*(.*)$/);if(m){const t=document.querySelector('#rSeen input[data-o="'+m[1]+'"]');if(t)t.value=m[2];}});
-  $('#rDiff').value=f[2]||''; $('#rLearn').value=f[3]||''; $('#rFeel').value=f[4]||''; $('#rPlan').value=f[5]||''; $('#rTags').value=f[6]||''; setPick('stars',f[7]);
+  const part=(t,lab)=>{for(const seg of String(t||'').split(' / ')){const x=seg.trim();if(x.indexOf(lab)===0)return x.slice(lab.length).replace(/^\s*:?\s*/,'').trim();}return '';};
+  $('#rDiff').value=f[2]||''; $('#rL1').value=part(f[3],'1.'); $('#rL2').value=part(f[3],'2.');
+  $('#rF1').value=part(f[4],'본 것'); $('#rF2').value=part(f[4],'기분'); $('#rF3').value=part(f[4],'까닭');
+  $('#rP1').value=part(f[5],'언제'); $('#rP2').value=part(f[5],'어디서'); $('#rP3').value=part(f[5],'무엇을');
+  $('#rTags').value=f[6]||''; setPick('stars',f[7]);
+  if(!r.refl&&open){let dr=null;try{dr=JSON.parse(localStorage.getItem('sg_rdraft_'+(ME||LS.get()||{}).grade+(ME||LS.get()||{}).cls+(ME||LS.get()||{}).num)||'null')}catch(e){}
+    if(dr){(dr.seen||'').split(',').forEach(v=>{const e=document.querySelector('#rSeen input[value="'+v.trim()+'"]');if(e)e.checked=true;});
+      (dr.desc||'').split(' / ').forEach(x=>{const m=x.match(/^(달|토성|이중성|성단|별자리):\s*(.*)$/);if(m){const t=document.querySelector('#rSeen input[data-o="'+m[1]+'"]');if(t)t.value=m[2];}});
+      $('#rDiff').value=dr.diff||''; $('#rL1').value=part(dr.learn,'1.'); $('#rL2').value=part(dr.learn,'2.');
+      $('#rF1').value=part(dr.feel,'본 것'); $('#rF2').value=part(dr.feel,'기분'); $('#rF3').value=part(dr.feel,'까닭');
+      $('#rP1').value=part(dr.plan,'언제'); $('#rP2').value=part(dr.plan,'어디서'); $('#rP3').value=part(dr.plan,'무엇을'); $('#rTags').value=dr.tags||''; setPick('stars',dr.stars);}}
   if(r.refl)$('#rSaved').textContent='✔ 저장된 관측 일지가 있어요.';
   $('#absBox').hidden=!!r.absent; $('#absDone').hidden=!r.absent;
   $('#cLogin').hidden=true; $('#cIn').hidden=false; setSub(open?'post':(r.pre?'info':'pre'));
@@ -794,14 +874,40 @@ $('#aSave').onclick=async()=>{const o=$('#aSaved'),b=$('#aSave'); if(!ME)return;
   b.disabled=true;o.textContent='저장하는 중…';
   try{const r=await run('savePre',Object.assign({},ME,{a}));o.textContent=r.ok?'✔ 저장했어요! 관측 날 예측이 맞았는지 확인해 봐요.':r.msg; if(r.ok&&MEINFO){MEINFO.pre=[a.safety?'동의':'',a.want,a.why,a.q1,a.q2,a.q3,a.ask];}}catch(e){o.textContent='저장하지 못했어요. 다시 눌러 주세요.';}
   b.disabled=false;};
-$('#rSave').onclick=async()=>{const o=$('#rSaved'),b=$('#rSave'); if(!ME)return;
-  const a={seen:[...document.querySelectorAll('#rSeen input:checked')].map(e=>e.value).join(', '),
+/* 관측 일지: 한 단계씩 */
+let RSTEP=0;
+function rData(){
+  return {seen:[...document.querySelectorAll('#rSeen input:checked')].map(e=>e.value).join(', '),
     desc:[...document.querySelectorAll('#rSeen input[data-o]')].filter(e=>e.value.trim()).map(e=>e.dataset.o+': '+e.value.trim()).join(' / '),
-    diff:$('#rDiff').value.trim(),learn:$('#rLearn').value.trim(),feel:$('#rFeel').value.trim(),plan:$('#rPlan').value.trim(),tags:$('#rTags').value.trim(),stars:pick('stars')};
-  const miss=!a.seen?'① 본 것을 하나 이상 체크해 주세요.':a.learn.length<15?'③ 배운 점을 두 가지, 조금 더 자세히 적어 주세요.':a.feel.length<15?'④ 느낀 점을 조금 더 자세히 적어 주세요.':a.plan.length<8?'⑤ 실천할 점(관측 계획)을 적어 주세요.':'';
-  if(miss){o.textContent=miss;return;}
-  b.disabled=true;o.textContent='저장하는 중…';
-  try{const r=await run('saveRefl',Object.assign({},ME,{a}));o.textContent=r.ok?'✔ 관측 일지를 저장했어요. 수고했어요!':r.msg;}catch(e){o.textContent='저장하지 못했어요. 다시 눌러 주세요.';}
+    diff:$('#rDiff').value.trim(),
+    learn:['1. '+$('#rL1').value.trim(),'2. '+$('#rL2').value.trim()].join(' / '),
+    feel:['본 것: '+$('#rF1').value.trim(),'기분: '+$('#rF2').value.trim(),'까닭: '+$('#rF3').value.trim()].join(' / '),
+    plan:['언제: '+$('#rP1').value.trim(),'어디서: '+$('#rP2').value.trim(),'무엇을: '+$('#rP3').value.trim()].join(' / '),
+    tags:$('#rTags').value.trim(),stars:pick('stars')};
+}
+function stepCheck(k){
+  if(k===0){const c=[...document.querySelectorAll('#rSeen input:checked')];if(!c.length)return '본 것을 하나 이상 체크해 주세요.';
+    for(const e of c){const t=document.querySelector('#rSeen input[data-o="'+e.value+'"]');if(t.value.trim().length<5)return e.value+'이(가) 어떻게 보였는지 한 줄 적어 주세요.';}}
+  if(k===1&&$('#rDiff').value.trim().length<10)return '예측과 실제를 한두 문장으로 비교해 주세요.';
+  if(k===2&&($('#rL1').value.trim().length<10||$('#rL2').value.trim().length<10))return '배운 점 두 가지를 모두 문장으로 적어 주세요.';
+  if(k===3&&($('#rF1').value.trim().length<5||$('#rF2').value.trim().length<2||$('#rF3').value.trim().length<5))return '세 칸을 모두 채워 주세요.';
+  if(k===4&&($('#rP1').value.trim().length<2||$('#rP2').value.trim().length<2||$('#rP3').value.trim().length<4))return '언제, 어디서, 무엇을 모두 적어 주세요.';
+  return '';
+}
+function showStep(k){RSTEP=k;
+  document.querySelectorAll('#rForm .step').forEach(e=>e.hidden=Number(e.dataset.step)!==k);
+  document.querySelectorAll('#rSteps i').forEach((e,i)=>e.className=i===k?'on':i<k?'done':'');
+  $('#rPrevBtn').style.visibility=k?'visible':'hidden'; $('#rNextBtn').hidden=k===6;
+  if(k===6){const a=rData(),L=x=>esc(x.split(' / ').map(t=>t.replace(/^[^:]+:\s*/,'')).join(' '));
+    $('#rPrev').innerHTML='<b>관측 기록</b>\n'+esc(a.desc.split(' / ').join('\n'))+'\n\n<b>예측과 실제</b>\n'+esc(a.diff)+'\n\n<b>배운 점</b>\n'+esc(a.learn.split(' / ').join('\n'))+'\n\n<b>느낀 점</b>\n'+L(a.feel)+'\n\n<b>실천할 점</b>\n'+L(a.plan)+'\n\n'+esc(a.tags)+(a.stars?'  '+'★'.repeat(Number(a.stars)):'');}
+  if(ME)try{localStorage.setItem('sg_rdraft_'+ME.grade+ME.cls+ME.num,JSON.stringify(rData()))}catch(e){}
+}
+$('#rNextBtn').onclick=()=>{const o=$('#rSaved'); const m=$('#rForm').classList.contains('lockview')?'':stepCheck(RSTEP); o.textContent=m; if(m)return; showStep(Math.min(6,RSTEP+1)); $('#rForm').scrollIntoView({behavior:'smooth',block:'start'});};
+$('#rPrevBtn').onclick=()=>{$('#rSaved').textContent='';showStep(Math.max(0,RSTEP-1));};
+document.querySelectorAll('.starters').forEach(g=>g.querySelectorAll('button').forEach(b=>b.onclick=()=>{const t=$('#'+g.dataset.for);const add=b.textContent;t.value=t.value.trim()?t.value.trim()+' '+add:add;t.focus();}));
+$('#rSave').onclick=async()=>{const o=$('#rSaved'),b=$('#rSave'); if(!ME)return;
+  const a=rData(); b.disabled=true;o.textContent='저장하는 중…';
+  try{const r=await run('saveRefl',Object.assign({},ME,{a}));o.textContent=r.ok?'✔ 관측 일지를 저장했어요. 오늘 밤 수고했어요! 🌙':r.msg;}catch(e){o.textContent='저장하지 못했어요. 다시 눌러 주세요.';}
   b.disabled=false;};
 $('#absGo').onclick=async()=>{const m=$('#absMsg'),b=$('#absGo'),why=$('#absWhy').value.trim(); m.className='msg'; if(!ME)return;
   if(why.length<2){m.textContent='못 오는 까닭을 짧게 적어 주세요.';m.className='msg err';return;}
